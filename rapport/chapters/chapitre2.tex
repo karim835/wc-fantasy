@@ -1,0 +1,77 @@
+% ===============================================================
+% CHAPITRE 2 : ÉTAT DE L'ART
+% ===============================================================
+
+\chapter{État de l'Art}
+
+\section{Introduction}
+Ce chapitre présente une synthèse critique des solutions et plateformes existantes dans le domaine des jeux de \textit{Fantasy Sport}. Il est essentiel de passer en revue cette littérature et ces systèmes existants afin de comprendre les approches actuelles, d'identifier ce qui fonctionne et, surtout, de mettre en évidence les lacunes qui subsistent. Nous couvrirons les axes suivants : l'analyse détaillée des leaders du marché (Fantasy Premier League, Sorare, FotMob), la comparaison de leurs caractéristiques via un tableau de synthèse, et enfin notre synthèse critique qui justifiera le positionnement technique et fonctionnel de notre projet \textbf{WC Fantasy}.
+
+\section{Présentation des travaux existants}
+Dans le cadre de ce projet d'application, les << travaux existants >> correspondent aux plateformes majeures dominant actuellement le marché du Fantasy Football. Pour chaque solution, nous analyserons son contexte, son approche technique, ses résultats et ses limites.
+
+\subsection{Fantasy Premier League (FPL)}
+\textbf{a. Contexte et objectif :} La FPL est le jeu officiel de la Premier League anglaise. Son objectif est de fidéliser les fans tout au long d'une saison de 38 journées en leur permettant de gérer une équipe virtuelle avec un budget défini.\\
+\textbf{b. Approche et technologies utilisées :} La plateforme utilise une architecture web et mobile classique basée sur un système de \textit{salary cap} (plafond salarial). Les points sont calculés de manière centralisée en fonction d'actions réelles sur le terrain (buts, passes décisives, \textit{clean sheets}).\\
+\textbf{c. Résultats obtenus :} La FPL a accompli l'exploit de rassembler une immense communauté mondiale (plus de 10 millions de joueurs actifs). Ses points forts résident dans la robustesse de son système de notation et l'équilibre de son économie virtuelle.\\
+\textbf{d. Limites identifiées :} Ce travail présente une lacune sociale majeure : l'absence d'outils de communication intégrés, obligeant les utilisateurs à utiliser des applications tierces (WhatsApp, Discord) pour échanger au sein de leur ligue. De plus, son système est très rigide et ne s'adapte pas aux formats courts d'une Coupe du Monde.
+
+\subsection{Sorare}
+\textbf{a. Contexte et objectif :} Sorare est une plateforme innovante qui cherche à moderniser le Fantasy Sport en y intégrant la collection numérique de cartes de joueurs.\\
+\textbf{b. Approche et technologies utilisées :} L'application repose sur la technologie Blockchain (Ethereum) et les NFTs (Non-Fungible Tokens). L'architecture permet aux utilisateurs d'acheter, vendre et échanger des cartes numériques dont la rareté (limitée, rare, super rare, unique) est cryptographiquement garantie.\\
+\textbf{c. Résultats obtenus :} Sorare a révolutionné le marché avec son modèle économique novateur. Ses points forts sont un design premium, une forte composante d'innovation, et une excellente couverture de nombreux championnats internationaux.\\
+\textbf{d. Limites identifiées :} La principale faiblesse de cette plateforme est son modèle \textit{"Pay-to-Win"}. Les joueurs occasionnels qui ne souhaitent pas dépenser d'argent réel se retrouvent fortement désavantagés dans les classements, créant une barrière à l'entrée très élevée.
+
+\subsection{FotMob (Mode Fantasy)}
+\textbf{a. Contexte et objectif :} Initialement une application leader pour le suivi des scores en direct, FotMob a développé un mini-jeu de fantasy intégré pour accroître la rétention et l'engagement de ses utilisateurs pendant les matchs.\\
+\textbf{b. Approche et technologies utilisées :} C'est une approche "mobile-first" s'appuyant sur l'intégration de flux de données en temps réel ultra-rapides. Le mode fantasy est greffé sur l'architecture existante de suivi des statistiques des matchs.\\
+\textbf{c. Résultats obtenus :} FotMob offre une interface utilisateur exceptionnelle et des données instantanées extrêmement fiables. Le jeu est très fluide, rapide à prendre en main et très accessible pour les néophytes.\\
+\textbf{d. Limites identifiées :} Le mode fantasy ne couvre pas les besoins compétitifs approfondis et est souvent perçu comme un simple gadget. L'application manque de ligues privées avancées et ne permet pas d'affrontements directs en duel (Head-to-Head) entre amis.
+
+\section{Tableau comparatif des travaux}
+Le tableau ci-dessous synthétise les similitudes et différences entre les travaux étudiés.
+
+\vspace{0.3cm}
+\begin{table}[H]
+\centering
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{1.8cm}|X|X|X|X|}
+\hline
+\rowcolor{emsigreen}\textcolor{white}{\textbf{Référence}} & \textcolor{white}{\textbf{Technologie / Approche}} & \textcolor{white}{\textbf{Fonctionnalités couvertes}} & \textcolor{white}{\textbf{Points forts}} & \textcolor{white}{\textbf{Limites}} \\
+\hline
+\textbf{FPL} & Web/Mobile MVC, \textit{Salary cap} & Composition (Draft), Ligues privées, Budget & Communauté massive, barème équilibré & Manque de social (pas de chat), inadapté aux tournois courts \\
+\hline
+\textbf{Sorare} & Blockchain, Web3, Cartes NFT & Collection, Achat/Vente, Tournois globaux & Innovation technologique, Design premium & Modèle \textit{Pay-to-Win}, barrière financière élevée \\
+\hline
+\textbf{FotMob} & Intégration data temps réel & Scores en direct, Mode fantasy basique & Fiabilité des données instantanées, Fluidité UX & Pas de ligues avancées, perçu comme un gadget \\
+\hline
+\end{tabularx}
+\caption{Tableau comparatif des solutions existantes}
+\label{tab:comparatif_etat_art}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau compare les trois principales solutions existantes selon leur approche technologique, les fonctionnalités couvertes, leurs points forts et leurs limites, permettant de positionner clairement WC Fantasy parmi elles.}\normalsize
+
+\section{Synthèse critique et positionnement}
+L'analyse des travaux existants permet de dégager plusieurs constats majeurs. 
+
+Tout d'abord, on observe des \textbf{tendances communes} fortes : la gamification du suivi des matchs est devenue indispensable pour capter l'attention des fans modernes. Toutes les plateformes s'efforcent d'offrir des interfaces léchées et s'appuient massivement sur des flux de données statistiques en temps réel.
+
+Cependant, nous avons pointé des \textbf{lacunes récurrentes} que ces solutions n'ont pas encore bien adressées. D'une part, l'aspect social est paradoxalement négligé (FPL, FotMob) : l'absence d'outils de communication intégrés brise l'immersion des joueurs. D'autre part, les modèles économiques modernes (Sorare) tendent à exclure le public occasionnel via des mécaniques de monétisation intrusives (\textit{Pay-to-Win}). Enfin, la grande majorité de ces mécaniques sont pensées pour des saisons régulières longues et se révèlent inadaptées au format condensé d'un tournoi comme la Coupe du Monde.
+
+\textbf{Positionnement de WC Fantasy :} 
+Notre projet comble ces lacunes de manière ciblée. Pour contrer le manque d'interaction, WC Fantasy intègre nativement un chat en temps réel (via Socket.io) au sein de chaque ligue. Pour corriger le déséquilibre financier, nous proposons un modèle équitable axé uniquement sur l'expertise footballistique. Enfin, pour nous adapter au rythme effréné de la Coupe du Monde 2026, nous introduisons un système de batailles directes (\textit{Head-to-Head}) hebdomadaires, garantissant un enjeu continu.
+
+\vspace{0.3cm}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{photos/radar_chart.png}
+    \caption{Positionnement de WC Fantasy face aux solutions existantes}
+    \label{fig:radar_chart_pos}
+\end{figure}
+\vspace{0.2cm}
+\noindent\small\textit{Ce diagramme radar illustre comment WC Fantasy se démarque en maximisant les axes liés au social, à la gamification et à l'adaptation aux tournois courts.}
+\normalsize
+
+\section*{Conclusion}
+Ce chapitre a permis de dresser un état de l'art critique des plateformes de Fantasy Sport actuelles. Nous avons mis en évidence que malgré des offres techniquement abouties, les besoins d'intégration sociale et d'équité pour des événements courts restent non satisfaits. Ces conclusions justifient la pertinence et l'existence de \textbf{WC Fantasy}. Le chapitre suivant s'appuiera sur ce constat pour détailler la spécification des besoins et la conception technique du système conçu pour relever ces défis.

@@ -1,0 +1,27 @@
+\babel@toc {french}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Positionnement de WC Fantasy face aux solutions existantes}}{9}{figure.2.1}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Architecture globale du système WC Fantasy}}{13}{figure.3.1}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagramme de cas d'utilisation --- Utilisateur}}{15}{figure.3.2}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagramme de cas d'utilisation --- Administrateur}}{16}{figure.3.3}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Modèle Conceptuel de Données (MCD)}}{18}{figure.3.4}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Diagramme de classes du système WC Fantasy}}{20}{figure.3.5}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Diagramme d'activité --- Authentification utilisateur}}{22}{figure.3.6}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Diagramme d'activité --- Composition de l'équipe (Draft)}}{23}{figure.3.7}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagramme d'activité --- Prédictions communautaires}}{24}{figure.3.8}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Diagramme d'activité --- Résolution des batailles}}{25}{figure.3.9}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Diagramme de séquence --- Processus de synchronisation des scores}}{26}{figure.3.10}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Architecture MVC du backend WC Fantasy}}{31}{figure.4.1}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Écran d'authentification}}{34}{figure.4.2}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Écran profil utilisateur}}{34}{figure.4.3}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Page d'accueil de l'application}}{35}{figure.4.4}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Actualités et nouveautés}}{35}{figure.4.5}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Composition de l'équipe (Draft)}}{36}{figure.4.6}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Détails et statistiques d'un joueur}}{36}{figure.4.7}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Suivi des matchs}}{37}{figure.4.8}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Chatbot IA (Gemini)}}{37}{figure.4.9}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Interface d'administration --- Saisie des scores}}{38}{figure.4.10}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Interface d'administration --- Gestion des actualités}}{38}{figure.4.11}%

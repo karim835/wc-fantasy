@@ -1,0 +1,19 @@
+1. Update IP (run from any PowerShell window)
+powershell -ExecutionPolicy Bypass -File D:\pfa\update-ip.ps1
+
+
+2. Start backend (keep open)
+cd D:\pfa 
+node app.js
+ # in case port is full: Stop-Process -Name node
+
+3. Check phone (new window)
+flutter devices
+ 
+
+4. Run app
+cd D:\pfa\mobile
+# for reverse 
+.\run.ps1 
+
+ flutter run

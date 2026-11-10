@@ -1,0 +1,407 @@
+% ===============================================================
+% CHAPITRE 4 : DÉVELOPPEMENT, VALIDATION ET RÉSULTATS
+% ===============================================================
+
+\chapter{Développement, Validation et Résultats}
+
+\section*{Introduction}
+
+Ce chapitre présente la réalisation concrète du système WC Fantasy. Il détaille l'environnement de développement, les fonctionnalités implémentées avec leurs extraits de code significatifs, les tests réalisés pour valider le fonctionnement, les difficultés rencontrées et les solutions apportées.
+
+\section{Environnement de développement}
+
+Le développement a été réalisé sur Windows 11, et les outils suivants ont été mobilisés pour la conception et la réalisation du projet :
+
+\vspace{0.5cm}
+
+\begin{table}[!htbp]
+    \centering
+    \renewcommand{\arraystretch}{1.4}
+    \begin{tabular}{|l|p{10.5cm}|}
+        \hline
+        \rowcolor{darkblue}\textcolor{white}{\textbf{Outil / Logiciel}} & \textcolor{white}{\textbf{Version \& Rôle}} \\
+        \hline
+        Visual Studio Code & IDE principal --- extensions ESLint, Prettier, Flutter, GitLens \\
+        \hline
+        Android Studio & Émulateur Android et compilation de l'application Flutter mobile \\
+        \hline
+        Node.js & v20 LTS --- runtime JavaScript côté serveur \\
+        \hline
+        npm\cite{npm} & v10 --- gestionnaire de paquets Node.js \\
+        \hline
+        Flutter SDK & v3.x --- framework mobile cross-platform \\
+        \hline
+        Dart SDK & v3.x --- langage de programmation (inclus avec Flutter) \\
+        \hline
+        PostgreSQL & v16 --- système de gestion de base de données relationnelle \\
+        \hline
+        pgAdmin 4 & Interface graphique d'administration PostgreSQL \\
+        \hline
+        Redis & v7 --- serveur de cache en mémoire \\
+        \hline
+        Git & Contrôle de version --- dépôt local et hébergement distant (GitHub) \\
+        \hline
+        Postman & Tests et documentation des endpoints REST de l'API \\
+        \hline
+        TablePlus & Visualisation et requêtes directes sur la base de données \\
+        \hline
+    \end{tabular}
+    \caption{Environnement de développement et pile technologique}
+    \label{tab:env_dev}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau récapitule les logiciels, outils et frameworks utilisés avec leurs rôles respectifs dans le cycle de développement du projet, couvrant l'IDE, le serveur, les bases de données et les outils de test.}\normalsize
+
+\section{Implémentation du système}
+
+\subsection{Structure du projet backend}
+
+Le backend est organisé selon le pattern architectural \textbf{Modèle-Vue-Contrôleur (MVC)}, adapté pour les API REST (où la "Vue" est remplacée par des réponses JSON). Ce choix garantit une séparation claire des responsabilités entre le routage, la logique métier et l'accès aux données.
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{photos/mvc_schema.jpg}
+    \caption{Architecture MVC du backend WC Fantasy}
+    \label{fig:mvc_architecture}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce schéma montre la répartition des dossiers du code source selon le motif MVC, où les "Routes" dirigent vers les "Controllers", qui s'appuient eux-mêmes sur les "Services" et "Models" pour manipuler les données de manière modulaire.}
+\normalsize
+
+\vspace{0.3cm}
+
+Cette arborescence se traduit concrètement par l'organisation des dossiers suivante :
+
+\vspace{0.3cm}
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Dossier}} & \textcolor{white}{\textbf{Contenu}} \\
+        \hline
+        controllers/ & Endpoints REST (logique de requête/réponse) \\
+        \hline
+        services/ & Logique métier (calcul points, sync scores, etc.) \\
+        \hline
+        models/ & Schémas ORM + migrations SQL \\
+        \hline
+        middleware/ & Auth (JWT), rate-limiting, validation \\
+        \hline
+        socket/ & Événements WebSocket (Socket.io) \\
+        \hline
+        routes/ & Définition des routes API \\
+        \hline
+        utils/ & Helpers (cache, email, logging, pointsCalculator) \\
+        \hline
+        migrations/ & Scripts SQL de création/modification des tables \\
+        \hline
+    \end{tabular}
+\caption{Structure du projet}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau présente l'arborescence structurelle du backend en détaillant le rôle spécifique de chaque répertoire dans l'architecture MVC adoptée.}\normalsize
+
+\subsection{Authentification et sécurité}
+
+Le système d'authentification repose sur une double stratégie de tokens JWT. Lors de la connexion, le serveur émet un \textbf{access token} (validité 7 jours) et un \textbf{refresh token} (validité 30 jours). L'access token est vérifié à chaque requête protégée par le middleware \texttt{auth.middleware.js}. Lorsque l'access token expire, l'application Flutter utilise automatiquement le refresh token pour en obtenir un nouveau, de façon transparente pour l'utilisateur.
+
+Les mots de passe sont hachés avec \textbf{bcrypt} (10 rounds de salt) avant stockage. La réinitialisation du mot de passe génère un token aléatoire sécurisé (SHA-256), stocké haché en base avec une expiration d'une heure, et transmis par email via Brevo SMTP. Le rate limiting global (1 000 req/15min par IP) et un rate limiter spécifique sur la route de connexion (10 tentatives/15min) protègent contre les attaques par force brute (recommandations de sécurité OWASP\cite{owasp}).
+
+Côté Flutter, les tokens sont stockés dans \texttt{FlutterSecureStorage} (chiffré par le keychain iOS/Keystore Android). L'intercepteur Dio gère automatiquement le rafraîchissement transparent et la déconnexion en cas d'échec du refresh.
+
+\subsection{Gestion de l'équipe et des transferts}
+
+La constitution d'une équipe est soumise à plusieurs contraintes métier strictement enforced côté serveur :
+
+\begin{itemize}
+    \item Budget maximum de 100M, avec contrainte CHECK (budget $\geq$ 0) en base de données pour éviter les dépassements.
+    \item Maximum 15 joueurs par équipe (1 GK, 4 DEF, 4 MID, 3 FWD + 3 remplaçants selon la formation).
+    \item Maximum 3 joueurs par club réel pour respecter l'esprit du jeu.
+    \item Les opérations d'ajout et de suppression utilisent des transactions PostgreSQL avec SELECT FOR UPDATE pour éliminer toute race condition en cas d'appels concurrents.
+\end{itemize}
+
+Le système de transferts valide que le joueur sortant appartient bien à l'équipe, que le joueur entrant n'y est pas déjà, et que le solde budgétaire reste positif après l'opération. 
+
+Un cache Redis invalidé à chaque modification assure que l'état retourné est toujours à jour.
+
+\subsection{Calcul des points fantasy}
+
+Le barème de points est centralisé dans le module \texttt{utils/pointsCalculator.js}, source unique de vérité utilisée à la fois par le controller de saisie des scores (\texttt{gameweek.controller.js}) et par la tâche de synchronisation automatique (\texttt{scoreSync.job.js}). Ce choix élimine toute divergence possible entre les deux modes de saisie.
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabularx}{\linewidth}{|X|c|c|c|c|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Action / Événement}} & \textcolor{white}{\textbf{Gardien}} & \textcolor{white}{\textbf{Défenseur}} & \textcolor{white}{\textbf{Milieu}} & \textcolor{white}{\textbf{Attaquant}} \\
+        \hline
+        Jouer $<$ 60 minutes & 1 pt & 1 pt & 1 pt & 1 pt \\
+        \hline
+        Jouer $\geq$ 60 minutes & 2 pts & 2 pts & 2 pts & 2 pts \\
+        \hline
+        But inscrit & 10 pts & 6 pts & 5 pts & 4 pts \\
+        \hline
+        Passe décisive & 3 pts & 3 pts & 3 pts & 3 pts \\
+        \hline
+        Clean sheet ($\geq$60 min) & 4 pts & 4 pts & 1 pt & --- \\
+        \hline
+        Arrêt (par 3 arrêts) & 1 pt & --- & --- & --- \\
+        \hline
+        Penalty arrêté & 5 pts & --- & --- & --- \\
+        \hline
+        Penalty manqué & -2 pts & -2 pts & -2 pts & -2 pts \\
+        \hline
+        Carton jaune & -1 pt & -1 pt & -1 pt & -1 pt \\
+        \hline
+        Carton rouge & -3 pts & -3 pts & -3 pts & -3 pts \\
+        \hline
+        But contre son camp & -2 pts & -2 pts & -2 pts & -2 pts \\
+        \hline
+        Bonus capitaine & \multicolumn{4}{c|}{$\times$2 tous points} \\
+        \hline
+    \end{tabularx}
+\caption{Barème de points fantasy}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau détaille la grille de calcul des scores attribuant des points positifs ou négatifs aux joueurs en fonction de leurs actions réelles sur le terrain, répartis selon leur poste de jeu.}\normalsize
+
+\subsection{Temps réel avec Socket.io}
+
+Le serveur Socket.io est initialisé dans \texttt{socket/socket.js} et partage le même serveur HTTP qu'Express. L'authentification est vérifiée au niveau du middleware de connexion (token JWT dans \texttt{handshake.auth}). Les rooms sont organisées par ligue (\texttt{league:\{id\}}) et par bataille (\texttt{battle:\{id\}}), permettant de cibler précisément les messages.
+
+Les événements implémentés sont : \texttt{league:join} (avec vérification DB de l'appartenance), \texttt{league:leave}, \texttt{battle:watch} (avec vérification DB), \texttt{draft:pick} (diffusion dans la room de ligue), et \texttt{chat:message} (avec rate limit 1 msg/sec via Map en mémoire et vérification d'appartenance avant diffusion). La déconnexion nettoie automatiquement l'entrée de rate-limit.
+
+\subsection{Synchronisation automatique des scores}
+
+Une tâche cron (node-cron\cite{node_cron}) s'exécute \textbf{quotidiennement à 3h du matin UTC} pour synchroniser les scores réels des joueurs depuis l'API football-data.org. Elle récupère les matchs terminés de la journée en cours, extrait les statistiques individuelles (buts, passes, minutes, cartons) et les insère ou met à jour dans la table \texttt{player\_scores}. Le calcul de points utilise la même fonction \texttt{calcPlayerPoints} que la saisie manuelle, garantissant la cohérence.
+
+\subsection{Chatbot IA --- Google Gemini}
+
+Le chatbot est accessible via \texttt{POST /api/chatbot/chat}. Il reçoit un message utilisateur, construit un prompt enrichi de contexte (compétition, équipes, actualités) et interroge l'API Google Gemini (modèle gemini-pro). La réponse est retournée en temps réel via Server-Sent Events (SSE) pour une expérience de streaming fluide. L'historique de conversation est maintenu côté client (Flutter) pour conserver le contexte sur plusieurs échanges.
+
+\section{Interfaces utilisateur}
+
+L'application Flutter est organisée selon une navigation par onglets principaux (Bottom Navigation Bar). Les différentes fonctionnalités sont illustrées par les captures d'écran ci-dessous.
+
+\subsection{Interfaces Mobiles}
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/authentification.png}
+        \caption{Écran d'authentification}
+        \label{fig:screen_auth}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/profil_utili.png}
+        \caption{Écran profil utilisateur}
+        \label{fig:screen_profile}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ces captures d'écran montrent l'interface mobile Flutter. L'écran de gauche permet l'authentification sécurisée de l'utilisateur, tandis que celui de droite affiche le tableau de bord de son profil (incluant son rang, son niveau et son historique de matchs).}
+\normalsize
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/page_acceuil.png}
+        \caption{Page d'accueil de l'application}
+        \label{fig:screen_home}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/news.png}
+        \caption{Actualités et nouveautés}
+        \label{fig:screen_news}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{L'écran de gauche présente la page d'accueil avec les principales statistiques et raccourcis. L'écran de droite affiche le fil d'actualité permettant aux utilisateurs de suivre les dernières informations du tournoi.}
+\normalsize
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/draft.png}
+        \caption{Composition de l'équipe (Draft)}
+        \label{fig:screen_team}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/joueur.png}
+        \caption{Détails et statistiques d'un joueur}
+        \label{fig:screen_player}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{La capture de gauche présente l'interface du "Draft" où l'utilisateur compose son équipe sur un terrain interactif. Celle de droite montre la fiche détaillée d'un joueur, avec ses statistiques de performance et sa valeur.}
+\normalsize
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/match.png}
+        \caption{Suivi des matchs}
+        \label{fig:screen_battles}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/chat_bot.png}
+        \caption{Chatbot IA (Gemini)}
+        \label{fig:screen_chatbot}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{L'interface de gauche est dédiée au suivi des matchs en direct, montrant les scores et les affrontements. À droite, l'interface du Chatbot IA intégré permet de formuler des recommandations ou de demander des statistiques sur le tournoi.}
+\normalsize
+
+\subsection{Interfaces d'Administration}
+
+Pour superviser la plateforme et saisir les résultats réels, l'administrateur dispose d'interfaces de gestion spécifiques. Les captures ci-dessous en illustrent deux exemples majeurs :
+
+\vspace{0.3cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/screenshot_admin_1.png}
+        \caption{Interface d'administration --- Saisie des scores}
+        \label{fig:screen_admin_scores}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{photos/screenshot_admin_2.png}
+        \caption{Interface d'administration --- Gestion des actualités}
+        \label{fig:screen_admin_news}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ces captures d'écran présentent l'interface d'administration de WC Fantasy. L'écran de gauche permet à l'administrateur d'enregistrer manuellement les scores réels des matchs et les performances des joueurs. L'écran de droite lui offre les outils nécessaires pour gérer, éditer et publier les actualités liées au tournoi.}
+\normalsize
+
+\section{Validation et tests}
+
+La validation du système a été réalisée via une combinaison de tests manuels avec Postman pour l'API et de tests fonctionnels sur l'application mobile. Le tableau ci-dessous présente les principaux scénarios testés :
+
+\vspace{0.3cm}
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabularx}{\linewidth}{|X|X|c|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Scénario testé}} & \textcolor{white}{\textbf{Résultat attendu}} & \textcolor{white}{\textbf{Résultat obtenu}} \\
+        \hline
+        Inscription avec email existant & Erreur 409 Conflict (email déjà utilisé) & Conforme \\
+        \hline
+        Connexion avec mauvais mot de passe & Erreur 401 Unauthorized + message clair & Conforme \\
+        \hline
+        Ajout d'un joueur hors budget & Erreur 400 : budget insuffisant & Conforme \\
+        \hline
+        Ajout concurrent de 2 joueurs (race) & Un seul ajout accepté, budget cohérent & Conforme \\
+        \hline
+        Rejoindre une ligue avec mauvais code & Erreur 404 : ligue introuvable & Conforme \\
+        \hline
+        Chat : flood 50 messages/seconde & Seul 1 message/seconde diffusé (rate limit) & Conforme \\
+        \hline
+        Token JWT expiré & Flutter rafraîchit automatiquement, requête repart & Conforme \\
+        \hline
+        Soumission prédiction GW terminée & Erreur 400 : GW déjà complétée & Conforme \\
+        \hline
+        Reset MDP token expiré ($>$ 1h) & Erreur 400 : token invalide ou expiré & Conforme \\
+        \hline
+        Cache Redis : GET /api/news (2\textsuperscript{ème} appel) & Réponse source: "cache", $<$ 5 ms & Conforme \\
+        \hline
+        Saisie scores GK avec 6 arrêts & player\_scores.saves = 6, +2 pts bonus & Conforme \\
+        \hline
+        Résolution prédiction : bonne nation & user.xp += 8, prediction.resolved = true & Conforme \\
+        \hline
+    \end{tabularx}
+\caption{Scénarios de tests réalisés}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau liste les différents cas limites et scénarios critiques testés au niveau de l'API et du client, en précisant les comportements attendus et validés pour chaque test.}\normalsize
+
+\section{Difficultés rencontrées et solutions apportées}
+
+\vspace{0.3cm}
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabularx}{\linewidth}{|X|X|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Difficulté rencontrée}} & \textcolor{white}{\textbf{Solution apportée}} \\
+        \hline
+        Race condition sur le budget lors d'ajouts concurrents d'un joueur & Transaction PostgreSQL BEGIN/COMMIT + SELECT FOR UPDATE sur la ligne team \\
+        \hline
+        Les transferts échouaient : controller déstructurait playerOutId/playerInId alors que la route attendait playerOut/playerIn & Correction de la déstructuration : \texttt{const \{ playerOut: playerOutId, playerIn: playerInId \} = req.body} \\
+        \hline
+        clearCache des news ne fonctionnait pas : redis n'est pas exporté depuis cache.js & Remplacement par \texttt{cacheDel()} (helper exporté), suppression de l'import redis inexistant \\
+        \hline
+        XP des défis/prédictions polluait le classement fantasy (total\_points) & Ajout d'une colonne xp séparée (migration 010), réorientation des bonus vers xp uniquement \\
+        \hline
+        Double sérialisation JSON dans le cache des prédictions & Suppression du JSON.stringify manuel (cacheSet le fait déjà) et de JSON.parse (cacheGet parse déjà) \\
+        \hline
+        Flutter : logout effaçait l'URL d'API personnalisée (deleteAll) & Remplacement par suppression sélective : delete access\_token + delete refresh\_token \\
+        \hline
+        Ligues publiques sans code d'invitation (null) → impossibles à rejoindre & Génération systématique d'un code pour toutes les ligues (publiques et privées) \\
+        \hline
+        \_getWeekStart() : mutation de la date via setDate() → bug aux fins de mois & Reconstruction sans mutation : \texttt{new Date(year, month, date + diff)} \\
+        \hline
+        psql non reconnu dans PowerShell pour les migrations & Ajout du bin PostgreSQL 16 au PATH \\
+        \hline
+        Column saves absente du INSERT player\_scores malgré son utilisation dans calcPoints & Ajout de saves à la liste des colonnes INSERT et au SET de ON CONFLICT DO UPDATE \\
+        \hline
+    \end{tabularx}
+\caption{Difficultés rencontrées et solutions apportées}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau résume les principaux obstacles techniques rencontrés lors du développement de l'application et les solutions concrètes mises en œuvre pour les surmonter.}\normalsize
+
+\section{Limites du système}
+
+Certaines fonctionnalités n'ont pas été intégrées dans la version actuelle, principalement par contrainte de temps et de ressources :
+
+\begin{itemize}
+    \item \textbf{Microservice IA (python/FastAPI)} : prévu pour des recommandations ML de joueurs basées sur les performances historiques. La route \texttt{/api/ai} est implémentée mais retourne des données simulées en attendant le déploiement du microservice.
+    \item \textbf{Notifications push natives (FCM/APNs)} : l'architecture est prévue (champs device\_token, service push), mais l'intégration Firebase Cloud Messaging n'est pas finalisée.
+    \item \textbf{Mode hors-ligne complet} : un cache local limité est implémenté côté Flutter, mais la synchronisation complète hors-ligne n'est pas encore disponible.
+    \item \textbf{Tests automatisés} : les tests unitaires (Jest côté backend, flutter\_test côté mobile) sont partiellement écrits. Une couverture complète est prévue dans les versions futures.
+    \item \textbf{Déploiement en production} : l'application fonctionne en environnement de développement local. La containerisation Docker est partiellement configurée (docker-compose.yml) mais pas encore déployée sur un serveur cloud.
+\end{itemize}
+
+\section*{Conclusion}
+
+Ce chapitre a présenté la réalisation complète de WC Fantasy : de l'organisation du code backend à l'implémentation des fonctionnalités clés (auth JWT, draft d'équipe, batailles temps réel, prédictions, chatbot IA), en passant par les tests de validation et les difficultés surmontées. Les résultats obtenus démontrent un \textbf{système fonctionnel, sécurisé et performant}, répondant à l'ensemble des objectifs fixés dans le chapitre de conception.

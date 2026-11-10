@@ -1,0 +1,177 @@
+% ===============================================================
+% DOCUMENT PRINCIPAL - WC Fantasy PFA Report
+% ===============================================================
+
+\input{preamble.tex}
+
+\begin{document}
+
+% ===============================================================
+% PAGE DE TITRE
+% ===============================================================
+
+\newgeometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=4.2cm, % Espace pour le rail décoratif gauche
+    right=2.5cm
+}
+\begin{titlepage}
+
+% --- Graphismes d'Arrière-plan (TikZ) ---
+\begin{tikzpicture}[remember picture, overlay]
+    % 1. Le Rail Technologique (Bande latérale gauche en Vert EMSI + Ligne Or)
+    \fill[emsigreen] (current page.north west) rectangle ([xshift=1.1cm]current page.south west);
+    \fill[wcgold] ([xshift=1.1cm]current page.north west) rectangle ([xshift=1.3cm]current page.south west);
+    
+    % 2. Angle dynamique supérieur droit
+    \fill[emsigreen] (current page.north east) -- +(0,-5.5) -- +(-5.5,0) -- cycle;
+    \draw[wcgold, line width=6pt] ([xshift=-5.6cm]current page.north east) -- ([yshift=-5.6cm]current page.north east);
+
+    % 3. Angle dynamique inférieur droit
+    \fill[emsigreen] (current page.south east) -- +(0,5.5) -- +(-5.5,0) -- cycle;
+    \draw[wcgold, line width=6pt] ([xshift=-5.6cm]current page.south east) -- ([yshift=5.6cm]current page.south east);
+\end{tikzpicture}
+
+% --- En-tête (Logo EMSI Unique à gauche) ---
+\noindent
+\begin{minipage}{\linewidth}
+    \raggedright 
+    
+    
+    \vspace*{-5cm} % Ajustement par défaut pour l'aligner avec le haut
+    \hspace*{-3cm}  % Ajustement par défaut
+    \includegraphics[height=15cm]{photos/emsi_logo.png} 
+\end{minipage}
+
+\vspace{-3cm} % Espace entre le logo et le début du titre
+
+% --- Bloc Titre (Style PFA) ---
+\noindent
+\begin{minipage}{\linewidth}
+    \flushleft
+    {\large\sffamily\textcolor{wcgold}{\textbf{\textsc{Projet de Fin d'Année (PFA)}}}} \\[0.3cm]
+    \begin{center}
+        {\Huge \sffamily \textbf{\textcolor{darkslate}{WC Fantasy}}\par}
+    \end{center}
+    \vspace{-0.3cm}
+    {\color{emsigreen}\rule{\linewidth}{2.5pt}}
+\end{minipage}
+
+\vspace{1.5cm}
+
+% --- Informations Étudiants (5 Étudiants) ---
+\noindent
+\begin{minipage}{\linewidth}
+    \flushleft
+    {\large \sffamily \textcolor{darkslate}{\textbf{Filière :}}} {\large \sffamily Ingénierie Informatique et Réseaux} \\[0.6cm]
+    {\LARGE \textsf{\textbf{\textcolor{emsigreen}{Réalisé par :}}}} \\[0.3cm]
+    {\large \sffamily
+    \begin{tabular}{@{}ll}
+        $\bullet$ \textsc{BOURIZK Ayoub} & \hspace{1.5cm} $\bullet$ \textsc{BEN MOUSA Karim } \\[0.2cm]
+        $\bullet$ \textsc{RAIH Douae} & \hspace{1.5cm} $\bullet$ \textsc{SIMILLA Hidaya} \\[0.2cm]
+        $\bullet$ \textsc{EL JARJAF Haitam Amine}
+    \end{tabular}}
+\end{minipage}
+
+\vfill 
+
+% --- Section du Jury (2 Membres) ---
+\noindent
+\begin{minipage}{\linewidth}
+    \flushleft
+    {\large \textbf{\textit{\textcolor{emsigreen}{Membres du Jury :}}}} \\[0.3cm]
+    {\small \sffamily
+    \begin{tabular}{@{}ll}
+        \textbf{Pr. EL KAYSOUNI Wafae} & Qualité ( Encadrante Pédagogique) \\
+        \textbf{Pr. ABROUN Soundouss} & Qualité ( Examinatrice) \\
+    \end{tabular}}
+\end{minipage}
+
+\vfill
+
+% --- Année Académique (Tout en bas) ---
+\begin{center}
+    {\small \textcolor{gray}{Année Académique : } \textbf{2025 - 2026}}
+\end{center}
+
+\vspace{0.2cm}
+
+\end{titlepage}
+\restoregeometry
+
+\pagenumbering{Roman}
+
+% ===============================================================
+% PAGES LIMINAIRES
+% ===============================================================
+
+\newpage
+\thispagestyle{plain}
+\input{chapters/remerciements.tex}
+
+\newpage
+\thispagestyle{plain}
+\input{chapters/resume.tex}
+
+% ===============================================================
+% TABLE DES MATIÈRES
+% ===============================================================
+
+\newpage
+\thispagestyle{plain}
+\tableofcontents
+
+% ===============================================================
+% LISTE DES FIGURES
+% ===============================================================
+
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Liste des figures}
+\listoffigures
+
+% ===============================================================
+% LISTE DES TABLEAUX
+% ===============================================================
+
+\newpage
+\thispagestyle{plain}
+\phantomsection
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+\listoftables
+
+% ===============================================================
+% CONTENU PRINCIPAL
+% ===============================================================
+
+\clearpage
+\pagenumbering{arabic}
+\fancyfoot[C]{\textcolor{emsigreen}{\sffamily\small\thepage}}
+
+\input{chapters/introduction.tex}
+
+\input{chapters/chapitre1.tex}
+
+\input{chapters/chapitre2.tex}
+
+\input{chapters/chapitre3.tex}
+
+\input{chapters/chapitre4.tex}
+
+\input{chapters/conclusion.tex}
+
+% ===============================================================
+% BIBLIOGRAPHIE
+% ===============================================================
+
+\input{chapters/bibliographie.tex}
+
+% ===============================================================
+% ANNEXES
+% ===============================================================
+
+\input{chapters/annexes.tex}
+
+\end{document}

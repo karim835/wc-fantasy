@@ -1,0 +1,175 @@
+% ===============================================================
+% ANNEXES
+% ===============================================================
+\clearpage
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+  {\color{wcgold}\rule{0.75\linewidth}{3pt}}\\[1.8cm]
+  {\LARGE\sffamily\bfseries\textcolor{emsigreen}{Annexes}}\\[1.8cm]
+  {\color{wcgold}\rule{0.75\linewidth}{3pt}}
+\end{center}
+\vspace*{\fill}
+\clearpage
+
+\newgeometry{top=3cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=55pt, headsep=15pt}
+
+\addcontentsline{toc}{chapter}{Annexes}
+\markboth{Annexes}{Annexes}
+
+{\noindent\LARGE\sffamily\bfseries\textcolor{emsigreen}{Annexes}}\par
+\vspace{0.2cm}
+{\noindent\color{wcgold}\rule{\linewidth}{1.2pt}}\par
+\vspace{0.5cm}
+
+\section*{Annexe A --- Endpoints REST principaux}
+\addcontentsline{toc}{section}{Annexe A --- Endpoints REST principaux}
+
+\vspace{0.3cm}
+
+\begin{table}[H]
+\centering\small
+    \begin{tabularx}{\linewidth}{|l|X|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Méthode + Route}} & \textcolor{white}{\textbf{Description \& Authentification}} \\
+        \hline
+        POST /api/auth/register & Créer un compte $\rightarrow$ email + username + password \\
+        \hline
+        POST /api/auth/login & Connexion $\rightarrow$ retourne access\_token + refresh\_token \\
+        \hline
+        POST /api/auth/refresh & Rafraîchir l'access token avec refresh\_token \\
+        \hline
+        POST /api/auth/forgot-password & Demander un lien de réinitialisation par email \\
+        \hline
+        POST /api/auth/reset-password & Réinitialiser le mot de passe via token email \\
+        \hline
+        GET /api/players & Lister les joueurs (filtres : position, club, nationality) --- Auth \\
+        \hline
+        GET /api/players/:id & Détails d'un joueur --- Auth \\
+        \hline
+        GET /api/fantasy-team/my-team & Récupérer son équipe --- Auth \\
+        \hline
+        POST /api/fantasy-team/my-team/players & Ajouter un joueur à l'équipe --- Auth \\
+        \hline
+        DELETE /api/fantasy-team/my-team/players/:id & Retirer un joueur --- Auth \\
+        \hline
+        GET /api/leagues & Mes ligues --- Auth \\
+        \hline
+        POST /api/leagues & Créer une ligue --- Auth \\
+        \hline
+        POST /api/leagues/join & Rejoindre via code invitation --- Auth \\
+        \hline
+        GET /api/leagues/:id/battles & Batailles d'une ligue --- Auth \\
+        \hline
+        GET /api/battles/:id & Détail d'une bataille --- Auth \\
+        \hline
+        GET /api/gameweeks & Liste des journées de jeu --- Auth \\
+        \hline
+        POST /api/gameweeks/:id/scores & Saisir les scores d'une journée --- Admin \\
+        \hline
+        POST /api/predictions & Soumettre une prédiction --- Auth \\
+        \hline
+        GET /api/predictions/gameweek/:id & Stats communautaires d'une journée --- Auth \\
+        \hline
+        GET /api/news & Actualités football --- Public (cachées Redis) \\
+        \hline
+        POST /api/chatbot/chat & Envoyer un message au chatbot Gemini --- Auth \\
+        \hline
+        GET /api/photos/player/:id & Photo d'un joueur (cascade DB$\rightarrow$cache$\rightarrow$Wikipedia$\rightarrow$fallback) \\
+        \hline
+        POST /api/admin/photos/backfill & Enrichissement photo en masse --- Admin \\
+        \hline
+        DELETE /api/transfers/leagues/:id/transfer & Effectuer un transfert entrant/sortant --- Auth \\
+        \hline
+    \end{tabularx}
+\caption{Principaux endpoints REST de l'API}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau recense les principaux endpoints REST exposés par l'API du projet, en précisant la méthode HTTP, la route, la description de l'action et le niveau d'authentification requis.}\normalsize
+
+\section*{Annexe B --- Variables d'environnement (.env)}
+\addcontentsline{toc}{section}{Annexe B --- Variables d'environnement (.env)}
+
+\vspace{0.3cm}
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabularx}{\linewidth}{|p{7cm}|X|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Variable}} & \textcolor{white}{\textbf{Description}} \\
+        \hline
+        PORT & Port du serveur Express (défaut : 3000) \\
+        \hline
+        NODE\_ENV & Environnement : development / production \\
+        \hline
+        JWT\_SECRET & Clé secrète pour signer les access tokens \\
+        \hline
+        JWT\_REFRESH\_SECRET & Clé secrète pour signer les refresh tokens \\
+        \hline
+        DB\_HOST / DB\_PORT / DB\_NAME / DB\_USER / DB\_PASSWORD & Connexion PostgreSQL \\
+        \hline
+        REDIS\_HOST / REDIS\_PORT / REDIS\_PASSWORD & Connexion Redis \\
+        \hline
+        BREVO\_API\_KEY & Clé API Brevo pour l'envoi d'emails SMTP \\
+        \hline
+        EMAIL\_FROM & Adresse expéditeur des emails (ex : noreply@fantasyfc2026.com) \\
+        \hline
+        FOOTBALL\_DATA\_API\_KEY & Clé API football-data.org pour la synchronisation des scores \\
+        \hline
+        GEMINI\_API\_KEY & Clé API Google Gemini pour le chatbot IA \\
+        \hline
+        CORS\_ORIGIN & Origine(s) autorisées pour CORS (ex : http://localhost:3001) \\
+        \hline
+        ADMIN\_EMAIL / ADMIN\_PASSWORD / ADMIN\_USERNAME & Identifiants du compte administrateur initial \\
+        \hline
+        CLIENT\_URL & URL de l'application cliente (pour les liens email de reset MDP) \\
+        \hline
+        APP\_NAME & Nom de l'application affiché dans les emails \\
+        \hline
+    \end{tabularx}
+\caption{Variables d'environnement}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau liste toutes les variables d'environnement nécessaires au démarrage de l'application, incluant les paramètres de connexion aux bases de données, les clés API et les secrets d'authentification.}\normalsize
+
+\section*{Annexe C --- Barème complet des migrations SQL}
+\addcontentsline{toc}{section}{Annexe C --- Barème complet des migrations SQL}
+
+\vspace{0.3cm}
+
+\begin{table}[!htbp]
+\centering
+    \begin{tabularx}{\linewidth}{|l|X|}
+        \hline
+        \rowcolor{emsigreen}\textcolor{white}{\textbf{Fichier}} & \textcolor{white}{\textbf{Contenu}} \\
+        \hline
+        001\_initial\_schema.sql & Création des 20 tables principales + indexes de base \\
+        \hline
+        002\_add\_player\_photo.sql & Ajout de la colonne photo\_url à la table players \\
+        \hline
+        003\_add\_admin.sql & Ajout de la colonne role à users (user / admin) \\
+        \hline
+        004\_extended\_user\_profile.sql & Ajout avatar\_url, bio, date\_of\_birth à users \\
+        \hline
+        005\_national\_teams.sql & Création des tables national\_teams et national\_fixtures \\
+        \hline
+        006\_national\_teams\_nationality\_key.sql & Ajout de la contrainte UNIQUE sur national\_teams.nationality \\
+        \hline
+        007\_budget\_constraint.sql & Contrainte CHECK (budget $\geq$ 0) sur teams.budget \\
+        \hline
+        008\_add\_indexes.sql & 9 index FK sur teams, battles, player\_scores, refresh\_tokens, predictions \\
+        \hline
+        009\_add\_saves\_column.sql & Colonne saves INTEGER DEFAULT 0 sur player\_scores \\
+        \hline
+        010\_add\_xp\_column.sql & Colonne xp INTEGER DEFAULT 0 sur users (séparation XP / points fantasy) \\
+        \hline
+    \end{tabularx}
+\caption{Liste des migrations SQL}
+\end{table}
+
+\vspace{0.2cm}
+\noindent\small\textit{Ce tableau décrit les migrations SQL successives appliquées à la base de données PostgreSQL du projet, chacune correspondant à une évolution incrémentale du schéma.}\normalsize
+
+\restoregeometry

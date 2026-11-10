@@ -1,0 +1,858 @@
+RAPPORT DE PROJET DE FIN D'ANNÉE
+WC Fantasy
+Application Mobile de Fantasy Football
+Année universitaire 2025 / 2026
+
+WC Fantasy -- Rapport PFA
+Remerciements
+Nous tenons à exprimer notre sincère gratitude à notre encadrant pédagogique pour ses précieux conseils, son soutien constant et la qualité de son encadrement tout au long de ce projet. Sa disponibilité et son expertise ont été déterminantes dans l'aboutissement de ce travail. Nous remercions également l'ensemble du corps enseignant de l'EMSI -- et plus particulièrement le département Informatique et Réseaux -- pour la qualité de la formation dispensée et les compétences techniques transmises durant ces trois années de cursus. Enfin, nous adressons nos remerciements aux membres de notre groupe pour leur engagement, leur sérieux et la qualité de la collaboration maintenue tout au long du projet.
+Page 2 / 42
+
+WC Fantasy -- Rapport PFA
+Résumé
+Le présent rapport décrit la conception et le développement de WC Fantasy, une application mobile de fantasy football dédiée à la Coupe du Monde 2026. Dans un contexte où les applications de fantasy sport connaissent un essor considérable, ce projet propose une plateforme complète permettant aux utilisateurs de constituer une équipe virtuelle de joueurs réels, de participer à des ligues compétitives, d'affronter d'autres équipes lors de batailles hebdomadaires et de se mesurer à leurs amis dans un environnement entièrement personnalisé.
+La solution repose sur une architecture client-serveur découplée : un backend Node.js/Express exposant une API REST sécurisée par JSON Web Tokens, une base de données PostgreSQL pour la persistance des données, un cache Redis pour les performances, et une application mobile Flutter cross-platform pour l'interface utilisateur. Le système intègre également des communications temps réel via Socket.io, un module de synchronisation automatique des scores des joueurs réels, un chatbot IA basé sur Google Gemini, et un système de notifications push.
+Les résultats obtenus démontrent une plateforme fonctionnelle couvrant l'authentification sécurisée, la gestion d'équipes et de ligues, le calcul automatique des points fantasy, les batailles hebdomadaires, les prédictions communautaires et la gamification par XP. L'application répond aux contraintes de performance, de sécurité et de fiabilité attendues dans un contexte de production.
+Mots-clés : Fantasy Football, Application Mobile, Flutter, Node.js, PostgreSQL, Redis, Socket.io, API REST, JWT, Coupe du Monde 2026
+Abstract
+This report presents the design and development of WC Fantasy, a mobile fantasy football application dedicated to the 2026 FIFA World Cup. The solution features a Node.js/Express REST API secured with JWT, a PostgreSQL database, Redis caching, and a cross-platform Flutter mobile application. Real-time communications are handled via Socket.io, automatic score synchronisation is provided through a scheduled job, and an AI chatbot powered by
+Page 3 / 42
+
+WC Fantasy -- Rapport PFA
+Google Gemini enriches the user experience. The system covers team management, league competitions, weekly battles, community predictions, and XP-based gamification. Keywords: Fantasy Football, Mobile Application, Flutter, Node.js, PostgreSQL, Redis, Socket.io, REST API, JWT, FIFA World Cup 2026
+Page 4 / 42
+
+WC Fantasy -- Rapport PFA
+Table des matières
+Remerciements..................................................................................................................... 2 Résumé ................................................................................................................................ 3
+Abstract ............................................................................................................................. 3 Table des matières ............................................................................................................... 5 Liste des figures et tableaux.................................................................................................. 7 Introduction générale ............................................................................................................ 8
+Introduction ........................................................................ Error! Bookmark not defined. 1.1 Contexte du projet .................................................................................................... 11 1.2 Problématique .......................................................................................................... 11 1.3 Objectifs du projet..................................................................................................... 12 Conclusion ......................................................................... Error! Bookmark not defined. Introduction ........................................................................ Error! Bookmark not defined. 2.1 Concepts fondamentaux........................................................................................... 14
+2.1.1 Fantasy Sport..................................................................................................... 14 2.1.2 Architecture Client-Serveur ................................................................................ 14 2.1.3 API REST........................................................................................................... 14 2.1.4 Temps réel et WebSockets ................................................................................ 14 2.1.5 Authentification par JWT .................................................................................... 15 2.2 Technologies et outils du domaine............................................................................ 15 2.3 Solutions existantes.................................................................................................. 15 2.3.1 Fantasy Premier League (FPL) .......................................................................... 15 2.3.2 Sorare ................................................................................................................ 15 2.3.3 FotMob Fantasy ................................................................................................. 16 2.4 Analyse critique comparative .................................................................................... 16 2.5 Positionnement du projet .......................................................................................... 16 Conclusion ......................................................................... Error! Bookmark not defined. Introduction ........................................................................ Error! Bookmark not defined. 3.1 Analyse des besoins................................................................................................. 19 3.1.1 Besoins fonctionnels .......................................................................................... 19 3.1.2 Besoins non fonctionnels ................................................................................... 19 3.2 Identification des acteurs .......................................................................................... 20 3.3 Cahier des charges synthétique ............................................................................... 20 3.4 Conception générale -- Architecture globale ............................................................ 21 3.5 Modélisation fonctionnelle -- Diagramme de cas d'utilisation ................................... 21 3.6 Modélisation structurelle -- Schéma de base de données........................................ 23 3.7 Modélisation dynamique -- Diagrammes d'activité ................................................... 23
+Page 5 / 42
+
+WC Fantasy -- Rapport PFA
+Diagramme 1 : Authentification utilisateur .................................................................... 24 Diagramme 2 : Composition de l'équipe (Draft) ............................................................ 25 Diagramme 3 : Prédictions communautaires ................................................................ 26 Diagramme 4 : Résolution des batailles ....................................................................... 27 3.8 Choix technologiques ............................................................................................... 28 Conclusion ......................................................................... Error! Bookmark not defined. Introduction ........................................................................ Error! Bookmark not defined. 4.1 Environnement de développement ........................................................................... 30 4.2 Implémentation du système ...................................................................................... 30 4.2.1 Structure du projet backend ............................................................................... 30 4.2.2 Authentification et sécurité ................................................................................. 31 4.2.3 Gestion de l'équipe et des transferts .................................................................. 32 4.2.4 Calcul des points fantasy ................................................................................... 32 4.2.5 Temps réel avec Socket.io ................................................................................. 33 4.2.6 Synchronisation automatique des scores ........................................................... 33 4.2.7 Chatbot IA -- Google Gemini ............................................................................. 33 4.3 Interfaces utilisateur.................................................................................................. 33 4.4 Validation et tests ..................................................................................................... 34 4.5 Difficultés rencontrées et solutions apportées........................................................... 35 4.6 Limites du système ................................................................................................... 36 Conclusion ......................................................................... Error! Bookmark not defined. Conclusion générale et perspectives................................................................................... 37 Bibliographie et Webographie ............................................................................................. 39 Annexes.............................................................................................................................. 40 Annexe A -- Endpoints REST principaux ........................................................................ 40 Annexe B -- Variables d'environnement (.env)................................................................ 41 Annexe C -- Barème complet des migrations SQL ......................................................... 41
+Page 6 / 42
+
+WC Fantasy -- Rapport PFA
+Liste des figures et tableaux
+Figures · Figure 1 ­ Architecture globale du système WC Fantasy · Figure 2 ­ Diagramme de cas d'utilisation · Figure 3 ­ Schéma de la base de données (MCD simplifié) · Figure 4 ­ Diagramme d'activité : Authentification utilisateur · Figure 5 ­ Diagramme d'activité : Composition de l'équipe (Draft) · Figure 6 ­ Diagramme d'activité : Prédictions communautaires · Figure 7 ­ Diagramme d'activité : Résolution des batailles · Figure 8 ­ Pile technologique du projet · Figure 9 ­ Flux d'authentification JWT (access + refresh token) · Figure 10 ­ Pipeline de synchronisation des scores
+Tableaux · Tableau 1 ­ Comparaison des applications existantes · Tableau 2 ­ Besoins fonctionnels du système · Tableau 3 ­ Besoins non fonctionnels · Tableau 4 ­ Récapitulatif des choix technologiques · Tableau 5 ­ Principaux endpoints REST de l'API · Tableau 6 ­ Barème de points fantasy · Tableau 7 ­ Scénarios de tests réalisés · Tableau 8 ­ Difficultés rencontrées et solutions apportées
+Page 7 / 42
+
+WC Fantasy -- Rapport PFA
+Introduction générale
+Le football est sans conteste le sport le plus suivi au monde, réunissant des milliards de passionnés à chaque grande compétition internationale. La Coupe du Monde 2026, organisée conjointement par le Maroc, les États-Unis et le Canada, s'annonce comme l'édition la plus grande de l'histoire avec 48 équipes participantes, offrant ainsi un contexte exceptionnel pour les applications de divertissement sportif numérique.
+Dans ce contexte, les applications de fantasy sport connaissent une croissance exponentielle. Ces plateformes permettent aux fans de participer activement à leur passion en constituant des équipes virtuelles à partir de joueurs réels, dont les performances sont ensuite converties en points. Le marché mondial du fantasy sport était estimé à plus de 20 milliards de dollars en 2023 et devrait dépasser 48 milliards d'ici 2030.
+Problématique : La majorité des plateformes de fantasy sport existantes (Fantasy Premier League, FotMob, Sorare) sont conçues pour les championnats nationaux réguliers et ne proposent pas d'expérience optimisée pour une compétition éphémère comme la Coupe du Monde. De plus, elles manquent souvent d'interactions sociales riches (batailles directes, chat en temps réel, prédictions communautaires) et d'une interface mobile moderne et fluide.
+Ce projet a pour objectif général de concevoir et développer WC Fantasy, une application mobile complète dédiée à la Coupe du Monde 2026, permettant à des groupes d'amis de s'affronter dans des ligues privées ou publiques via un système de fantasy football complet et gamifié. Les objectifs spécifiques sont : (1) développer un backend sécurisé et performant avec Node.js/Express/PostgreSQL ; (2) concevoir une application mobile cross-platform avec Flutter ; (3) implémenter des fonctionnalités temps réel via Socket.io ; (4) intégrer un module de synchronisation automatique des scores via une API officielle.
+La méthodologie adoptée est itérative : analyse des besoins, conception de l'architecture, développement par fonctionnalités, et validation continue. Le présent rapport est organisé en quatre chapitres : le Chapitre 1 présente le contexte et la problématique ; le Chapitre 2 analyse l'état de l'art ; le Chapitre 3 expose la conception du système ; le Chapitre 4 détaille le développement et les résultats obtenus.
+Page 8 / 42
+
+WC Fantasy -- Rapport PFA Page 9 / 42
+
+WC Fantasy -- Rapport PFA
+Chapitre 1
+Contexte et Problématique
+Page 10 / 42
+
+WC Fantasy -- Rapport PFA
+Introduction
+Ce chapitre présente le contexte général dans lequel s'inscrit le projet WC Fantasy, définit la problématique à résoudre et précise les objectifs poursuivis. Il constitue le fondement sur lequel repose l'ensemble de la démarche de conception et de développement.
+1.1 Contexte du projet
+Le football est le sport le plus populaire au monde avec plus de 5 milliards de fans selon la FIFA. La Coupe du Monde 2026 représente un événement sans précédent : pour la première fois dans l'histoire de la compétition, 48 nations s'affronteront, générant 104 matchs sur un mois et demi. Cet événement crée une opportunité unique pour des applications de divertissement sportif.
+Le fantasy sport est un secteur en plein essor qui permet aux supporters de s'impliquer activement dans leur passion. Le principe est simple : chaque utilisateur constitue une équipe virtuelle composée de joueurs réels, et les performances réelles de ces joueurs (buts, passes décisives, clean sheets, etc.) se traduisent en points dans le jeu. Ces points déterminent un classement au sein de ligues privées ou publiques.
+En Afrique du Nord et au Maroc en particulier, l'intérêt pour le football est exacerbé par la première participation historique du Maroc à la co-organisation d'une Coupe du Monde, créant un terreau extrêmement favorable pour ce type d'application. L'essor de la téléphonie mobile (taux de pénétration supérieur à 80 % au Maroc) renforce cette opportunité.
+1.2 Problématique
+Malgré la popularité du fantasy sport, plusieurs problèmes persistent dans les solutions actuellement disponibles :
+· Absence d'application dédiée à la Coupe du Monde 2026 avec un catalogue complet de joueurs des 48 nations participantes.
+· Les plateformes existantes sont peu adaptées aux compétitions éphémères (durée limitée, format à élimination directe).
+Page 11 / 42
+
+WC Fantasy -- Rapport PFA
+· Manque de fonctionnalités sociales : chat en temps réel entre membres d'une ligue, batailles directes (head-to-head), prédictions communautaires.
+· Interfaces mobiles souvent non optimisées, lentes et peu gamifiées. · Absence d'intelligence artificielle pour enrichir l'expérience utilisateur
+(recommandations, chatbot d'assistance).
+La question centrale est donc : comment concevoir une application mobile de fantasy football complète, performante et engageante, spécifiquement adaptée au format et à l'échelle de la Coupe du Monde 2026 ?
+1.3 Objectifs du projet
+Objectif général : Concevoir et développer une application mobile de fantasy football dédiée à la Coupe du Monde 2026, offrant une expérience utilisateur complète, sécurisée et en temps réel.
+Objectifs spécifiques : 1. Développer un backend robuste avec Node.js, Express.js et PostgreSQL, exposant une API REST complète et sécurisée par JWT. 2. Concevoir une application mobile cross-platform avec Flutter, compatible iOS et Android, proposant une interface moderne et réactive. 3. Implémenter des fonctionnalités temps réel (chat de ligue, mises à jour de scores en direct) via Socket.io. 4. Intégrer un système de synchronisation automatique des scores des joueurs réels depuis l'API football-data.org.
+Conclusion
+Ce chapitre a permis de situer le projet WC Fantasy dans son contexte technique, social et économique. La problématique clairement identifiée -- absence d'une plateforme mobile dédiée à la Coupe du Monde 2026 avec des fonctionnalités sociales riches -- justifie pleinement la conception d'une solution sur mesure. Le chapitre suivant analyse les solutions existantes afin de positionner notre projet par rapport à l'état de l'art.
+Page 12 / 42
+
+WC Fantasy -- Rapport PFA
+Chapitre 2
+État de l'Art
+Page 13 / 42
+
+WC Fantasy -- Rapport PFA
+Introduction
+Ce chapitre analyse les concepts fondamentaux du fantasy sport, les technologies disponibles dans ce domaine et les solutions existantes sur le marché. Cette étude comparative permettra de positionner notre projet et d'identifier les apports différenciants de WC Fantasy.
+2.1 Concepts fondamentaux
+2.1.1 Fantasy Sport Le fantasy sport est un jeu en ligne dans lequel les participants sélectionnent de vrais athlètes pour former des équipes virtuelles. Les points sont calculés en fonction des statistiques réelles de ces joueurs lors des compétitions. Le marché mondial était évalué à 20,3 milliards USD en 2023 (source : Statista, 2024) et connaît une croissance annuelle de 14%.
+2.1.2 Architecture Client-Serveur Le modèle client-serveur découple l'interface utilisateur (client) de la logique métier et des données (serveur). Dans notre contexte, le client Flutter communique avec le serveur Node.js via des requêtes HTTP/REST et des connexions WebSocket persistantes. Ce modèle facilite la scalabilité horizontale et l'évolution indépendante des deux parties.
+2.1.3 API REST REST (Representational State Transfer) est un style architectural pour les services web. Une API REST repose sur les verbes HTTP (GET, POST, PUT, DELETE), l'absence d'état côté serveur (stateless), et l'utilisation de ressources identifiées par des URI. Elle permet une interopérabilité maximale entre le backend et les clients (mobile, web, tiers).
+2.1.4 Temps réel et WebSockets Les WebSockets établissent une connexion bidirectionnelle persistante entre client et serveur, contrairement au protocole HTTP classique (requête-réponse). Cette technologie est indispensable pour les applications nécessitant des mises à jour instantanées : scores en direct, chat, notifications.
+Page 14 / 42
+
+WC Fantasy -- Rapport PFA
+2.1.5 Authentification par JWT JSON Web Token (JWT) est un standard ouvert (RFC 7519) permettant de transmettre des informations de façon sécurisée entre parties sous forme de JSON signé. Un accès token de courte durée (7 jours) est combiné à un refresh token longue durée (30 jours) pour maintenir la session utilisateur sans stocker d'état côté serveur.
+
+2.2 Technologies et outils du domaine
+Le tableau suivant présente les principales technologies disponibles dans l'écosystème du développement d'applications mobile/backend :
+
+Catégorie Framework mobile Backend Node.js Base de données SQL Cache distribué Temps réel Authentification Déploiement
+
+Technologies disponibles Flutter, React Native, Ionic, Swift (iOS), Kotlin (Android) Express.js, Fastify, NestJS, Koa.js PostgreSQL, MySQL, SQLite, Microsoft SQL Server Redis, Memcached, Hazelcast Socket.io, Pusher, Firebase Realtime DB, Ably JWT, OAuth 2.0, Session-based, Passport.js Docker, Kubernetes, AWS, Heroku, Railway
+
+2.3 Solutions existantes
+Trois applications de référence ont été analysées pour comprendre l'état du marché :
+
+2.3.1 Fantasy Premier League (FPL) La Fantasy Premier League est la plateforme officielle de la Premier League anglaise, avec plus de 10 millions d'utilisateurs actifs par saison. Elle offre un système de points très élaboré (buts, passes, clean sheets, bonus BPS), un marché de transferts avec budget limité à 100 M£, des capitaines avec points doublés, des wild cards et des puces spéciales. Son interface web est robuste mais son application mobile est souvent critiquée pour sa lenteur et son manque de fonctionnalités sociales.
+
+2.3.2 Sorare
+
+Page 15 / 42
+
+WC Fantasy -- Rapport PFA
+Sorare est une plateforme de fantasy football basée sur la blockchain et les NFTs. Les joueurs sont des cartes numériques uniques dont la valeur fluctue selon les performances réelles. Elle couvre plus de 300 ligues et clubs dans le monde. Son modèle économique repose sur la revente de cartes, ce qui la rend inaccessible aux utilisateurs sans capital initial. Elle ne propose pas de mode social direct entre amis.
+
+2.3.3 FotMob Fantasy FotMob est principalement une application de suivi de résultats qui intègre un mode fantasy léger. Son avantage est la richesse des données live (scores, statistiques, formations en temps réel). Cependant, le mode fantasy reste limité et ne propose ni ligues privées avancées ni système de batailles directes.
+
+2.4 Analyse critique comparative
+
+Critère
+Dédié Coupe du Monde Application mobile native Ligues privées & sociales Batailles directes (H2H) Prédictions communautaires Chat de ligue temps réel Chatbot IA intégré Gratuit (sans NFT)
+
+FPL
+
+Sorare
+
+Non
+
+Non
+
+Partiellement Oui
+
+Oui
+
+Non
+
+Non
+
+Non
+
+Non
+
+Non
+
+Non
+
+Non
+
+Oui
+
+Non
+
+Oui
+
+Non
+
+FotMob Fantasy Non Oui Non Non
+
+WC Fantasy
+Oui Oui (Flutter) Oui + chat temps réel Oui
+
+Non
+
+Oui
+
+Non
+
+Oui (Socket.io)
+
+Non
+
+Oui (Gemini)
+
+Oui
+
+Oui
+
+2.5 Positionnement du projet
+L'analyse comparative démontre qu'aucune solution existante ne répond simultanément à l'ensemble des besoins identifiés. WC Fantasy se positionne comme la première application mobile dédiée exclusivement à la Coupe du Monde 2026, combinant :
+· Un système fantasy complet avec budget, formations et barème de points adapté au format mondial.
+· Des fonctionnalités sociales riches : ligues privées/publiques, chat temps réel, batailles directes.
+
+Page 16 / 42
+
+WC Fantasy -- Rapport PFA
+· Une intelligence artificielle embarquée (chatbot Gemini) pour l'assistance et les recommandations.
+· Un système de gamification (XP, défis quotidiens/hebdomadaires, achievements) pour fidéliser les utilisateurs.
+· Une architecture moderne, performante et open source, entièrement gratuite pour les utilisateurs.
+Conclusion
+L'état de l'art a révélé un vide sur le marché pour une application mobile de fantasy football dédiée à la Coupe du Monde 2026 avec des fonctionnalités sociales avancées. L'analyse comparative a mis en évidence les apports différenciants de WC Fantasy. Le chapitre suivant présente la conception détaillée du système pour répondre à ces besoins identifiés.
+Page 17 / 42
+
+WC Fantasy -- Rapport PFA
+Chapitre 3
+Spécification des Besoins et Conception du Système
+Page 18 / 42
+
+WC Fantasy -- Rapport PFA
+Introduction
+Ce chapitre formalise les besoins du système WC Fantasy, identifie les acteurs, définit le cahier des charges et présente la conception complète : architecture globale, diagrammes UML (cas d'utilisation, activité), schéma de base de données et choix technologiques justifiés.
+
+3.1 Analyse des besoins
+3.1.1 Besoins fonctionnels
+
+# BF01 BF02 BF03
+BF04 BF05 BF06 BF07 BF08
+BF09 BF10 BF11 BF12 BF13 BF14
+
+Besoin fonctionnel S'inscrire, se connecter et gérer son profil utilisateur Consulter le catalogue complet des joueurs de la CdM 2026 avec stats et photos Composer une équipe de 15 joueurs dans un budget de 100M avec contraintes de positions Créer ou rejoindre une ligue privée ou publique via code d'invitation Effectuer des transferts de joueurs (entrant/sortant) en période de transfert Participer à des batailles hebdomadaires head-to-head contre d'autres équipes de la ligue Consulter les scores et classements de la ligue en temps réel Soumettre des prédictions communautaires avant chaque journée (top buteur, buts, nation) Communiquer avec les membres de la ligue via un chat temps réel Interagir avec un chatbot IA pour obtenir des informations et conseils Gérer les actualités football (admin) et les consulter (utilisateur) Compléter des défis quotidiens/hebdomadaires pour gagner des points XP Réinitialiser son mot de passe par email (lien sécurisé, TTL 1h) Administrer : joueurs, scores de GW, utilisateurs, prédictions (rôle admin)
+
+3.1.2 Besoins non fonctionnels
+
+Catégorie Performance
+Scalabilité
+
+Exigence
+Temps de réponse API < 200 ms pour 95% des requêtes grâce au cache Redis
+Architecture stateless permettant la multiplication des instances backend
+
+Page 19 / 42
+
+WC Fantasy -- Rapport PFA
+
+Catégorie Sécurité
+Disponibilité Fiabilité
+Maintenabilité
+Compatibilité Accessibilité
+
+Exigence
+JWT avec rotation de refresh token, hachage bcrypt (10 rounds), rate limiting
+Reconnexion automatique Socket.io, retry interceptor côté Flutter
+Transactions PostgreSQL ACID pour toutes les opérations financières (budget)
+Architecture MVC côté backend, code modulaire et centralisé (pointsCalculator)
+Application Flutter compatible Android 5.0+ et iOS 12+
+Interface intuitive, temps d'apprentissage < 5 minutes pour un nouvel utilisateur
+
+3.2 Identification des acteurs
+Le système WC Fantasy implique deux acteurs principaux :
+· Utilisateur (User) : tout membre inscrit sur la plateforme. Il peut composer son équipe, rejoindre/créer des ligues, effectuer des transferts, participer aux batailles, prédire, chatter et interagir avec le chatbot IA.
+· Administrateur (Admin) : utilisateur disposant de droits étendus. Il gère les joueurs du catalogue, saisit les scores réels après chaque journée de jeu, publie des actualités, résout les prédictions communautaires et administre les utilisateurs.
+
+3.3 Cahier des charges synthétique
+ Backend : Node.js + Express.js -- API REST -- PostgreSQL -- Redis -- Socket.io  Mobile : Flutter (Dart) -- Riverpod (gestion état) -- Dio (HTTP) -- FlutterSecureStorage  Auth : JWT (access 7j + refresh 30j) -- bcrypt -- rate limiting -- CORS configurable  Temps réel : Socket.io -- rooms par ligue et par bataille -- rate limit 1 msg/sec  Scoring : barème détaillé par position -- synchronisation auto via football-data.org  Gamification : XP, défis quotidiens/hebdomadaires, achievements débloquables  IA : chatbot Google Gemini -- module prédictions communautaires  Email : Brevo SMTP -- reset mot de passe -- email de bienvenue
+
+Page 20 / 42
+
+WC Fantasy -- Rapport PFA
+3.4 Conception générale -- Architecture globale
+L'architecture du système repose sur un modèle client-serveur découplé en trois couches principales. Le schéma ci-dessous illustre l'organisation générale du système et les interactions entre ses composants :
+
+
+
+
+
+COUCHE CLIENT (Flutter -- Dart)
+
+
+
+     
+
+  Auth UI   Team UI  League UI  Battle UI  
+
+
+
+ HTTP/REST + JWT
+
+ WebSocket
+
+
+
+
+
+COUCHE SERVEUR (Node.js + Express.js)
+
+
+
+ Routes  Middlewares (auth/rate)  Controllers
+
+
+
+ Socket.io server  Score Sync Job  Email Service
+
+
+
+
+
+ SQL 
+
+ Cache
+
+ SMTP/API
+
+ 
+
+ PostgreSQL   (20 tables)
+
+ Redis
+
+
+
+ (Cache TTL) 
+
+ Brevo/Gemini/FD   APIs externes 
+
+  
+
+Figure 1 ­ Architecture globale du système WC Fantasy
+
+L'architecture se décompose en trois couches distinctes :
+· Couche Cliente (Flutter) : interface utilisateur cross-platform, gestion de l'état avec Riverpod, communication HTTP via Dio avec intercepteurs d'authentification et retry automatique.
+· Couche Serveur (Node.js/Express) : logique métier organisée en Controllers, Routes et Middlewares, serveur Socket.io intégré, tâche cron de synchronisation des scores, service email.
+· Couche Données : PostgreSQL pour la persistance (20 tables), Redis pour le cache (TTL configurable), APIs externes (football-data.org, Google Gemini, Brevo SMTP, Wikipedia).
+
+3.5 Modélisation fonctionnelle -- Diagramme de cas d'utilisation
+Le diagramme de cas d'utilisation ci-dessous recense l'ensemble des interactions entre les deux acteurs (Utilisateur et Administrateur) et le système. Il est organisé par domaine fonctionnel.
+
+Page 21 / 42
+
+WC Fantasy -- Rapport PFA
+Figure 2 ­ Diagramme de cas d'utilisation -- WC Fantasy
+Le diagramme met en évidence cinq grands domaines fonctionnels : · Authentification : inscription, connexion, réinitialisation du mot de passe. · Équipe : composer son équipe, effectuer des transferts, désigner un capitaine.
+Page 22 / 42
+
+WC Fantasy -- Rapport PFA
+· Compétition : créer/rejoindre des ligues, participer aux batailles, consulter les journées.
+· Profil & Joueurs : consulter le profil d'un joueur, suivre ses statistiques. · Information & Assistance : actualités, chatbot IA. · Administration : gérer les utilisateurs, joueurs, scores, ligues et prédictions.
+
+3.6 Modélisation structurelle -- Schéma de base de données
+La base de données PostgreSQL du projet comporte 20 tables organisées autour de l'entité centrale users. Le tableau ci-dessous présente les tables principales avec leur rôle et les colonnes clés :
+
+users
+
+Table
+
+teams
+
+players
+
+leagues
+
+league_members battles
+
+gameweeks player_scores
+
+predictions
+
+chat_messages refresh_tokens user_challenges user_achievements password_reset_tokens
+
+Rôle & Colonnes principales
+Comptes utilisateurs : id, username, email, password_hash, total_points, xp, rank
+Équipes fantasy : id, user_id, league_id, budget, formation, captain_id, players (JSONB)
+Catalogue joueurs CdM : id, name, position, club, nationality, price, points, stats (JSONB)
+Ligues : id, name, owner_id, max_members, is_private, invite_code, season, status
+Appartenance ligue-utilisateur : league_id, user_id, points
+Batailles H2H : id, league_id, home_team_id, away_team_id, home_score, away_score, status
+Journées de jeu : id, number, season, status, deadline
+Scores réels par journée : goals, assists, clean_sheet, saves, yellow_cards, total_points
+Prédictions : predicted_top_scorer, predicted_winner_nation, predicted_goals, bonus_points
+Messages du chat de ligue : league_id, user_id, message, created_at
+Tokens de rafraîchissement JWT : user_id, token, expires_at
+Défis complétés : user_id, challenge_key, challenge_type, xp_earned
+Achievements débloqués : user_id, achievement_key, unlocked_at
+Tokens de reset MDP : user_id, token_hash, expires_at
+
+3.7 Modélisation dynamique -- Diagrammes d'activité
+Quatre diagrammes d'activité illustrent les scénarios les plus importants du système :
+
+Page 23 / 42
+
+WC Fantasy -- Rapport PFA
+Diagramme 1 : Authentification utilisateur Ce diagramme décrit le flux d'authentification, depuis l'ouverture de l'application jusqu'au chargement de l'écran principal. Il couvre les cas d'inscription (POST /api/auth/register) et de connexion (POST /api/auth/login), avec la vérification du token JWT en cache et la gestion des erreurs de validation.
+Figure 4 ­ Diagramme d'activité -- Authentification utilisateur Page 24 / 42
+
+WC Fantasy -- Rapport PFA
+Diagramme 2 : Composition de l'équipe (Draft) Ce diagramme détaille le processus de composition d'équipe. L'utilisateur consulte le catalogue filtrable des joueurs, sélectionne un joueur, et décide de l'ajouter ou le retirer selon la disponibilité du budget et les contraintes de positions. Chaque opération est vérifiée côté serveur avec un verrou transactionnel FOR UPDATE pour éviter les race conditions.
+Figure 5 ­ Diagramme d'activité -- Composition de l'équipe (Draft) Page 25 / 42
+
+WC Fantasy -- Rapport PFA
+Diagramme 3 : Prédictions communautaires Avant chaque journée de jeu, les utilisateurs peuvent soumettre trois prédictions : le meilleur buteur, la nation la plus performante et le nombre total de buts. Ce diagramme montre le flux de soumission, la vérification du statut de la journée et la confirmation. Une fois la journée terminée, l'admin résout les prédictions et distribue les bonus XP.
+Figure 6 ­ Diagramme d'activité -- Prédictions communautaires Page 26 / 42
+
+WC Fantasy -- Rapport PFA
+Diagramme 4 : Résolution des batailles En fin de journée, les scores des équipes home et away sont calculés (buts×4, passes×3, clean sheets×4, etc.), comparés, et le résultat est enregistré dans la table battles. Une notification push est envoyée aux deux équipes, et l'historique est consultable immédiatement via GET /api/battles.
+Figure 7 ­ Diagramme d'activité -- Résolution des batailles Page 27 / 42
+
+WC Fantasy -- Rapport PFA
+
+3.8 Choix technologiques
+Le tableau ci-dessous récapitule chaque technologie retenue et sa justification :
+
+Technologie Node.js + Express.js
+PostgreSQL
+Redis Socket.io
+Flutter + Dart Riverpod JWT (access + refresh) Brevo SMTP Google Gemini API football-data.org
+
+Justification du choix
+Ecosystème JS unifié, asynchrone natif (I/O non bloquant), nombreux packages (jwt, bcrypt, pg, socket.io), performance élevée pour des API REST.
+SGBDR ACID complet, support JSON/JSONB pour stocker les compositions d'équipes, UUID natifs, contraintes CHECK pour l'intégrité (budget  0).
+Cache en mémoire ultra-rapide (< 1ms), réduction drastique des requêtes DB répétitives, TTL automatique, pub/sub possible.
+Abstraction WebSocket avec fallback HTTP long-polling, rooms nommées, authentification middleware JWT, reconnexion automatique.
+Un seul codebase pour iOS et Android, performances natives (moteur Skia), Riverpod pour la gestion d'état réactive, widgets riches.
+Gestion d'état compilée, thread-safe, testable sans BuildContext, supporte l'async avec AsyncNotifier.
+Stateless, scalable horizontalement, rotation sécurisée du refresh token, révocation possible.
+Service email gratuit (300 emails/jour), fiable, supporte les templates HTML, simple à intégrer via Nodemailer.
+LLM performant, API gratuite (niveau standard), réponses contextuelles pour le chatbot football.
+API officielle FIFA/UEFA, couvre la Coupe du Monde, données structurées (matchs, joueurs, scores), plan gratuit disponible.
+
+Conclusion
+Ce chapitre a formalisé l'ensemble des besoins fonctionnels et non fonctionnels de WC Fantasy, identifié les acteurs, présenté l'architecture globale et les modèles UML qui guident le développement. Les choix technologiques retenus -- Node.js, PostgreSQL, Redis, Socket.io, Flutter -- constituent une stack moderne, cohérente et adaptée aux contraintes du projet. Le chapitre suivant présente la réalisation concrète de ce système et les résultats obtenus.
+
+Page 28 / 42
+
+WC Fantasy -- Rapport PFA
+Chapitre 4
+Développement, Validation et Résultats
+Page 29 / 42
+
+WC Fantasy -- Rapport PFA
+Introduction
+Ce chapitre présente la réalisation concrète du système WC Fantasy. Il détaille l'environnement de développement, les fonctionnalités implémentées avec leurs extraits de code significatifs, les tests réalisés pour valider le fonctionnement, les difficultés rencontrées et les solutions apportées.
+
+4.1 Environnement de développement
+Le développement a été réalisé sur Windows 11 avec les outils suivants :
+
+Outil / Logiciel Visual Studio Code Android Studio
+Node.js npm Flutter SDK Dart SDK PostgreSQL
+pgAdmin 4 Redis Git Postman TablePlus
+
+Version & Rôle IDE principal -- extensions ESLint, Prettier, Flutter, GitLens Émulateur Android et compilation de l'application Flutter mobile v20 LTS -- runtime JavaScript côté serveur v10 -- gestionnaire de paquets Node.js v3.x -- framework mobile cross-platform v3.x -- langage de programmation (inclus avec Flutter) v18 -- système de gestion de base de données relationnelle Interface graphique d'administration PostgreSQL v7 -- serveur de cache en mémoire Contrôle de version -- dépôt local Tests et documentation des endpoints REST de l'API Visualisation et requêtes directes sur la base de données
+
+4.2 Implémentation du système
+4.2.1 Structure du projet backend Le backend est organisé selon le pattern MVC adapté aux API REST. La structure des dossiers garantit une séparation claire des responsabilités :
+Page 30 / 42
+
+WC Fantasy -- Rapport PFA
+
+pfa/
+
+ config/
+
+  db.js
+
+ Pool de connexions PostgreSQL
+
+  cache.js
+
+ Client Redis + helpers cacheGet/cacheSet/cacheDel
+
+  logger.js
+
+ Winston logger (console + fichier)
+
+ controllers/
+
+  auth.controller.js
+
+ Inscription, connexion, refresh, reset MDP
+
+  fantasy-team.controller.js  Équipe, draft, transferts
+
+  league.controller.js  Ligues, membres, code invitation
+
+  battle.controller.js  Batailles H2H, scores, historique
+
+  gameweek.controller.js  Journées, scores joueurs, calcul points
+
+  prediction.controller.js Prédictions, stats communautaires
+
+  challenge.controller.js  Défis XP quotidiens/hebdomadaires
+
+  news.controller.js
+
+ Actualités football (CRUD + cache)
+
+  photos.controller.js  Photos joueurs (DB  cache  Wikipedia  fallback)
+
+ routes/
+
+ 16 fichiers de routes (auth, player, league, battle...)
+
+ middlewares/
+
+  auth.middleware.js  Vérification JWT + extraction userId
+
+  isAdmin.js
+
+ Vérification rôle admin
+
+  errorHandler.js
+
+ Handler d'erreurs global
+
+ socket/socket.js  Socket.io : rooms, chat, draft, battle watch
+
+ jobs/scoreSync.job.js  Cron quotidien : sync scores football-data.org
+
+ utils/pointsCalculator.js  POINTS barème + calcPlayerPoints (source unique)
+
+ services/emailService.js  Nodemailer + Brevo SMTP
+
+ migrations/
+
+ 10 fichiers SQL de migration (001  010)
+
+ app.js
+
+ Bootstrap : Express, Socket.io, CORS, cron, routes
+
+4.2.2 Authentification et sécurité Le système d'authentification repose sur une double stratégie de tokens JWT. Lors de la connexion, le serveur émet un access token (validité 7 jours) et un refresh token (validité 30 jours). L'access token est vérifié à chaque requête protégée par le middleware auth.middleware.js. Lorsque l'access token expire, l'application Flutter utilise automatiquement le refresh token pour en obtenir un nouveau, de façon transparente pour l'utilisateur.
+Les mots de passe sont hachés avec bcrypt (10 rounds de salt) avant stockage. La réinitialisation du mot de passe génère un token aléatoire sécurisé (SHA-256), stocké haché en base avec une expiration d'une heure, et transmis par email via Brevo SMTP. Le rate limiting global (1 000 req/15min par IP) et un rate limiter spécifique sur la route de connexion (10 tentatives/15min) protègent contre les attaques par force brute.
+Côté Flutter, les tokens sont stockés dans FlutterSecureStorage (chiffré par le keychain iOS/Keystore Android). L'intercepteur Dio gère automatiquement le rafraîchissement transparent et la déconnexion en cas d'échec du refresh.
+
+Page 31 / 42
+
+WC Fantasy -- Rapport PFA
+4.2.3 Gestion de l'équipe et des transferts La constitution d'une équipe est soumise à plusieurs contraintes métier strictement enforced côté serveur :
+· Budget maximum de 100M, avec contrainte CHECK (budget >= 0) en base de données pour éviter les dépassements.
+· Maximum 15 joueurs par équipe (1 GK, 4 DEF, 4 MID, 3 FWD + 3 remplaçants selon la formation).
+· Maximum 3 joueurs par club réel pour respecter l'esprit du jeu. · Les opérations d'ajout et de suppression utilisent des transactions PostgreSQL avec
+SELECT FOR UPDATE pour éliminer toute race condition en cas d'appels concurrents.
+Le système de transferts valide que le joueur sortant appartient bien à l'équipe, que le joueur entrant n'y est pas déjà, et que le solde budgétaire reste positif après l'opération. Un cache Redis invalidé à chaque modification assure que l'état retourné est toujours à jour.
+4.2.4 Calcul des points fantasy Le barème de points est centralisé dans le module utils/pointsCalculator.js, source unique de vérité utilisée à la fois par le controller de saisie des scores (gameweek.controller.js) et par la tâche de synchronisation automatique (scoreSync.job.js). Ce choix élimine toute divergence possible entre les deux modes de saisie.
+
+Action / Événement Jouer < 60 minutes Jouer  60 minutes But inscrit Passe décisive Clean sheet (60 min) Arrêt (par 3 arrêts) Penalty arrêté Penalty manqué Carton jaune Carton rouge But contre son camp Bonus capitaine
+
+Gardien
+
+Défenseur
+
+1 pt
+
+1 pt
+
+2 pts
+
+2 pts
+
+10 pts
+
+6 pts
+
+3 pts
+
+3 pts
+
+4 pts
+
+4 pts
+
+1 pt
+
+--
+
+5 pts
+
+--
+
+-2 pts
+
+-2 pts
+
+-1 pt
+
+-1 pt
+
+-3 pts
+
+-3 pts
+
+-2 pts
+
+-2 pts
+
+×2 tous points ×2
+
+Milieu 1 pt 2 pts 5 pts 3 pts 1 pt -- -- -2 pts -1 pt -3 pts -2 pts ×2
+
+Attaquant 1 pt 2 pts 4 pts 3 pts -- -- -- -2 pts -1 pt -3 pts -2 pts ×2
+
+Page 32 / 42
+
+WC Fantasy -- Rapport PFA
+4.2.5 Temps réel avec Socket.io Le serveur Socket.io est initialisé dans socket/socket.js et partage le même serveur HTTP qu'Express. L'authentification est vérifiée au niveau du middleware de connexion (token JWT dans handshake.auth). Les rooms sont organisées par ligue (league:{id}) et par bataille (battle:{id}), permettant de cibler précisément les messages.
+Les événements implémentés sont : league:join (avec vérification DB de l'appartenance), league:leave, battle:watch (avec vérification DB), draft:pick (diffusion dans la room de ligue), et chat:message (avec rate limit 1 msg/sec via Map en mémoire et vérification d'appartenance avant diffusion). La déconnexion nettoie automatiquement l'entrée de rate-limit.
+4.2.6 Synchronisation automatique des scores Une tâche cron (node-cron) s'exécute quotidiennement à 3h du matin UTC pour synchroniser les scores réels des joueurs depuis l'API football-data.org. Elle récupère les matchs terminés de la journée en cours, extrait les statistiques individuelles (buts, passes, minutes, cartons) et les insère ou met à jour dans la table player_scores. Le calcul de points utilise la même fonction calcPlayerPoints que la saisie manuelle, garantissant la cohérence.
+4.2.7 Chatbot IA -- Google Gemini Le chatbot est accessible via POST /api/chatbot/chat. Il reçoit un message utilisateur, construit un prompt enrichi de contexte (compétition, équipes, actualités) et interroge l'API Google Gemini (modèle gemini-pro). La réponse est retournée en temps réel via Server-Sent Events (SSE) pour une expérience de streaming fluide. L'historique de conversation est maintenu côté client (Flutter) pour conserver le contexte sur plusieurs échanges.
+4.3 Interfaces utilisateur
+L'application Flutter est organisée selon une navigation par onglets principaux (Bottom Navigation Bar) :
+Page 33 / 42
+
+WC Fantasy -- Rapport PFA
+
+Écran / Module Écran d'accueil (Splash) Inscription / Connexion Mon Équipe (Team) Draft / Marché Ligues Batailles Prédictions Chat de ligue Actualités Chatbot IA Profil Admin Panel
+
+Description & Fonctionnalités clés
+Vérification automatique du JWT en cache  redirection vers connexion ou écran principal
+Formulaires validés, gestion d'erreurs API, stockage sécurisé des tokens JWT
+Affichage de la formation sur terrain de foot, budget restant, liste des joueurs, capitaine
+Liste paginée des joueurs avec filtres (position, club, nationalité, prix), ajout/retrait
+Mes ligues, création, rejoindre via code, classement des membres, points par GW
+Liste des batailles (H2H) en cours et passées, score en temps réel, statistiques détaillées
+Formulaire de prédiction par journée, statistiques communautaires (top prédicteurs)
+Messagerie temps réel (Socket.io), historique, avatars
+Feed d'actualités football (admin publie, user consulte)
+Interface de conversation avec le chatbot Gemini, suggestions de questions
+Stats utilisateur, XP, achievements, paramètres, déconnexion
+Saisie des scores de GW, gestion des joueurs, résolution des prédictions
+
+4.4 Validation et tests
+La validation du système a été réalisée via une combinaison de tests manuels avec Postman pour l'API et de tests fonctionnels sur l'application mobile. Le tableau ci-dessous présente les principaux scénarios testés :
+
+Scénario testé Inscription avec email existant
+Connexion avec mauvais mot de passe Ajout d'un joueur hors budget Ajout concurrent de 2 joueurs (race) Rejoindre une ligue avec mauvais code
+
+Résultat attendu
+Erreur 409 Conflict (email déjà utilisé)
+Erreur 401 Unauthorized + message clair
+Erreur 400 : budget insuffisant
+Un seul ajout accepté, budget cohérent
+Erreur 404 : ligue introuvable
+
+Résultat obtenu Conforme 
+Conforme 
+Conforme  Conforme  (FOR UPDATE)
+Conforme 
+
+Page 34 / 42
+
+WC Fantasy -- Rapport PFA
+
+Scénario testé Chat : flood 50 messages/seconde Token JWT expiré
+Soumission prédiction GW terminée Reset MDP token expiré (> 1h)
+Cache Redis : GET /api/news (2ème appel) Saisie scores GK avec 6 arrêts
+Résolution prédiction : bonne nation
+
+Résultat attendu
+Seul 1 message/seconde diffusé (rate limit)
+Flutter rafraîchit automatiquement, requête repart
+Erreur 400 : GW déjà complétée
+Erreur 400 : token invalide ou expiré
+Réponse source: "cache", < 5 ms
+player_scores.saves = 6, +2 pts bonus
+user.xp += 8, prediction.resolved = true
+
+Résultat obtenu Conforme  Conforme 
+Conforme  Conforme  Conforme  Conforme  Conforme 
+
+4.5 Difficultés rencontrées et solutions apportées
+
+Difficulté rencontrée
+
+Solution apportée
+
+Race condition sur le budget lors d'ajouts Transaction PostgreSQL BEGIN/COMMIT + SELECT
+
+concurrents d'un joueur
+
+FOR UPDATE sur la ligne team
+
+Les transferts échouaient : controller déstructurait playerOutId/playerInId alors que la route attendait playerOut/playerIn
+
+Correction de la déstructuration : const { playerOut: playerOutId, playerIn: playerInId } = req.body
+
+clearCache des news ne fonctionnait pas : Remplacement par cacheDel() (helper exporté),
+
+redis n'est pas exporté depuis cache.js
+
+suppression de l'import redis inexistant
+
+XP des défis/prédictions polluait le classement fantasy (total_points)
+
+Ajout d'une colonne xp séparée (migration 010), réorientation des bonus vers xp uniquement
+
+Double sérialisation JSON dans le cache Suppression du JSON.stringify manuel (cacheSet le
+
+des prédictions
+
+fait déjà) et de JSON.parse (cacheGet parse déjà)
+
+Flutter : logout effaçait l'URL d'API personnalisée (deleteAll)
+
+Remplacement par suppression sélective : delete access_token + delete refresh_token
+
+Ligues publiques sans code d'invitation (null)  impossibles à rejoindre
+
+Génération systématique d'un code pour toutes les ligues (publiques et privées)
+
+_getWeekStart() : mutation de la date via Reconstruction sans mutation : new Date(year,
+
+setDate()  bug aux fins de mois
+
+month, date + diff)
+
+psql non reconnu dans PowerShell pour les migrations
+
+Ajout du bin PostgreSQL 18 au PATH ($env:PATH += ";C:\Program Files\PostgreSQL\18\bin")
+
+Column saves absente du INSERT player_scores malgré son utilisation dans calcPoints
+
+Ajout de saves à la liste des colonnes INSERT et au SET de ON CONFLICT DO UPDATE
+
+Page 35 / 42
+
+WC Fantasy -- Rapport PFA
+4.6 Limites du système
+Certaines fonctionnalités n'ont pas été intégrées dans la version actuelle, principalement par contrainte de temps et de ressources :
+· Microservice IA (python/FastAPI) : prévu pour des recommandations ML de joueurs basées sur les performances historiques. La route /api/ai est implémentée mais retourne des données simulées en attendant le déploiement du microservice.
+· Notifications push natives (FCM/APNs) : l'architecture est prévue (champs device_token, service push), mais l'intégration Firebase Cloud Messaging n'est pas finalisée.
+· Mode hors-ligne complet : un cache local limité est implémenté côté Flutter, mais la synchronisation complète hors-ligne n'est pas encore disponible.
+· Tests automatisés : les tests unitaires (Jest côté backend, flutter_test côté mobile) sont partiellement écrits. Une couverture complète est prévue dans les versions futures.
+· Déploiement en production : l'application fonctionne en environnement de développement local. La containerisation Docker est partiellement configurée (docker-compose.yml) mais pas encore déployée sur un serveur cloud.
+Conclusion
+Ce chapitre a présenté la réalisation complète de WC Fantasy : de l'organisation du code backend à l'implémentation des fonctionnalités clés (auth JWT, draft d'équipe, batailles temps réel, prédictions, chatbot IA), en passant par les tests de validation et les difficultés surmontées. Les résultats obtenus démontrent un système fonctionnel, sécurisé et performant, répondant à l'ensemble des objectifs fixés dans le chapitre de conception.
+Page 36 / 42
+
+WC Fantasy -- Rapport PFA
+Conclusion générale
+Ce projet de fin d'année nous a permis de concevoir et développer WC Fantasy, une application mobile de fantasy football dédiée à la Coupe du Monde 2026. Partant d'un vide identifié dans l'offre existante -- l'absence d'une plateforme mobile combinant fantasy sport, fonctionnalités sociales en temps réel et gamification pour cet événement mondial -- nous avons proposé une solution complète et opérationnelle.
+Sur le plan technique, le projet a mobilisé un large spectre de compétences : architecture backend avec Node.js/Express/PostgreSQL, développement mobile cross-platform avec Flutter/Dart, communications temps réel avec Socket.io, gestion du cache avec Redis, intégration d'APIs tierces (football-data.org, Google Gemini, Brevo) et sécurisation multicouche (JWT, bcrypt, rate limiting, transactions ACID). L'ensemble représente plus de 16 routes API REST, 20 tables en base de données, et plusieurs modules spécialisés (calcul de points, synchronisation de scores, email, chatbot).
+Les compétences acquises au cours de ce projet sont multiples : maîtrise de l'architecture client-serveur découplée, gestion des états asynchrones complexes, conception de schémas de base de données relationnels, sécurisation d'une API REST, développement mobile réactif avec Riverpod, et gestion de projet en autonomie avec respect d'un cahier des charges structuré.
+Perspectives d'amélioration : plusieurs évolutions sont envisagées pour les versions futures. Premièrement, le déploiement en production sur une infrastructure cloud (AWS ou Railway) avec containerisation Docker et reverse proxy Nginx. Deuxièmement, l'activation du microservice Python de recommandations ML de joueurs basées sur les statistiques historiques. Troisièmement, l'intégration complète des notifications push Firebase (FCM pour Android, APNs pour iOS). Quatrièmement, l'ajout d'un mode spectateur permettant de suivre des équipes d'autres utilisateurs sans en être membre. Enfin, la création d'une interface web (Next.js) complémentaire à l'application mobile pour couvrir l'ensemble des plateformes.
+WC Fantasy représente une démonstration concrète de notre capacité à concevoir et réaliser un système logiciel complet, de la spécification à la mise en oeuvre, en appliquant les meilleures pratiques du développement web et mobile modernes.
+Page 37 / 42
+
+WC Fantasy -- Rapport PFA Page 38 / 42
+
+WC Fantasy -- Rapport PFA
+Bibliographie et Webographie
+Ouvrages et ressources techniques : 5. [1] Mozilla Developer Network (MDN). REST API -- HTTP Methods. https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods. Consulté en 2025. 6. [2] PostgreSQL Global Development Group. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/. Consulté en 2025. 7. [3] Redis Ltd. Redis Documentation -- Commands Reference. https://redis.io/docs/. Consulté en 2025. 8. [4] Socket.io Team. Socket.io Official Documentation v4. https://socket.io/docs/v4/. Consulté en 2025. 9. [5] Flutter Team -- Google. Flutter Documentation. https://docs.flutter.dev/. Consulté en 2025. 10. [6] Riverpod. Riverpod State Management Documentation. https://riverpod.dev/. Consulté en 2025. 11. [7] JSON Web Tokens. JWT.io -- Introduction to JSON Web Tokens. https://jwt.io/introduction. Consulté en 2025. 12. [8] football-data.org. Football Data API Documentation. https://www.footballdata.org/documentation/quickstart. Consulté en 2025. 13. [9] Google. Gemini API Documentation. https://ai.google.dev/docs. Consulté en 2025. 14. [10] Brevo. SMTP Email API Documentation. https://developers.brevo.com/. Consulté en 2025. 15. [11] OWASP Foundation. OWASP Top 10 Web Application Security Risks. https://owasp.org/Top10/. Consulté en 2025. 16. [12] Statista. Fantasy Sports Market Size 2023­2030. https://www.statista.com. 2024. 17. [13] FIFA. FIFA World Cup 2026 Official Website. https://www.fifa.com/worldcup/2026/. Consulté en 2025. 18. [14] node-cron. node-cron Documentation. https://github.com/node-cron/node-cron. Consulté en 2025. 19. [15] Nodemailer. Official Nodemailer Documentation. https://nodemailer.com/about/. Consulté en 2025.
+Page 39 / 42
+
+WC Fantasy -- Rapport PFA
+Annexes
+
+Annexe A -- Endpoints REST principaux
+
+Méthode + Route POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh POST /api/auth/forgot-password POST /api/auth/reset-password GET /api/players
+GET /api/players/:id GET /api/fantasy-team/my-team POST /api/fantasy-team/my-team/players DELETE /api/fantasy-team/my-team/players/:id GET /api/leagues POST /api/leagues POST /api/leagues/join GET /api/leagues/:id/battles GET /api/battles/:id GET /api/gameweeks POST /api/gameweeks/:id/scores (admin) POST /api/predictions GET /api/predictions/gameweek/:id GET /api/news POST /api/chatbot/chat GET /api/photos/player/:id
+POST /api/admin/photos/backfill DELETE /api/transfers/leagues/:id/transfer
+
+Description & Authentification Créer un compte  email + username + password Connexion  retourne access_token + refresh_token Rafraîchir l'access token avec refresh_token Demander un lien de réinitialisation par email Réinitialiser le mot de passe via token email Lister les joueurs (filtres : position, club, nationality) -- Auth Détails d'un joueur -- Auth Récupérer son équipe -- Auth Ajouter un joueur à l'équipe -- Auth Retirer un joueur -- Auth Mes ligues -- Auth Créer une ligue -- Auth Rejoindre via code invitation -- Auth Batailles d'une ligue -- Auth Détail d'une bataille -- Auth Liste des journées de jeu -- Auth Saisir les scores d'une journée -- Admin Soumettre une prédiction -- Auth Stats communautaires d'une journée -- Auth Actualités football -- Public (cachées Redis) Envoyer un message au chatbot Gemini -- Auth Photo d'un joueur (cascade DBcacheWikipediafallback) Enrichissement photo en masse -- Admin Effectuer un transfert entrant/sortant -- Auth
+
+Page 40 / 42
+
+WC Fantasy -- Rapport PFA
+
+Annexe B -- Variables d'environnement (.env)
+
+Variable
+
+Description
+
+PORT
+
+Port du serveur Express (défaut : 3000)
+
+NODE_ENV
+
+Environnement : development / production
+
+JWT_SECRET
+
+Clé secrète pour signer les access tokens
+
+JWT_REFRESH_SECRET
+
+Clé secrète pour signer les refresh tokens
+
+DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD
+
+Connexion PostgreSQL
+
+REDIS_HOST / REDIS_PORT / REDIS_PASSWORD
+
+Connexion Redis
+
+BREVO_API_KEY
+
+Clé API Brevo pour l'envoi d'emails SMTP
+
+EMAIL_FROM
+
+Adresse expéditeur des emails (ex : noreply@fantasyfc2026.com)
+
+FOOTBALL_DATA_API_KEY
+
+Clé API football-data.org pour la synchronisation des scores
+
+GEMINI_API_KEY
+
+Clé API Google Gemini pour le chatbot IA
+
+CORS_ORIGIN
+
+Origine(s) autorisées pour CORS (ex : http://localhost:3001)
+
+ADMIN_EMAIL / ADMIN_PASSWORD / Identifiants du compte administrateur initial ADMIN_USERNAME
+
+CLIENT_URL
+
+URL de l'application cliente (pour les liens email de reset MDP)
+
+APP_NAME
+
+Nom de l'application affiché dans les emails
+
+Annexe C -- Barème complet des migrations SQL
+
+Fichier
+
+Contenu
+
+001_initial_schema.sql
+
+Création des 20 tables principales + indexes de base
+
+002_add_player_photo.sql
+
+Ajout de la colonne photo_url à la table players
+
+002_add_admin.sql
+
+Ajout de la colonne role à users (user / admin)
+
+003_extended_user_profile.sql
+
+Ajout avatar_url, bio, date_of_birth à users
+
+004_national_teams.sql
+
+Création des tables national_teams et national_fixtures
+
+005_national_teams_nationality_key.sql Ajout de la contrainte UNIQUE sur national_teams.nationality
+
+007_budget_constraint.sql
+
+Contrainte CHECK (budget >= 0) sur teams.budget
+
+Page 41 / 42
+
+WC Fantasy -- Rapport PFA
+Fichier 008_add_indexes.sql 009_add_saves_column.sql 010_add_xp_column.sql
+
+Contenu
+9 index FK sur teams, battles, player_scores, refresh_tokens, predictions
+Colonne saves INTEGER DEFAULT 0 sur player_scores
+Colonne xp INTEGER DEFAULT 0 sur users (séparation XP / points fantasy)
+
+Page 42 / 42
+
+

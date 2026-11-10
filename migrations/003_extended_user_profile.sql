@@ -1,0 +1,4 @@
+-- Extended user profile fields
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE;

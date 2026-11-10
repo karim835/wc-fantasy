@@ -1,0 +1,96 @@
+name: wc_fantasy
+description: WC Fantasy - Fantasy Football for FIFA World Cup 2026
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # HTTP & Networking
+  dio: ^5.4.3+1
+  socket_io_client: ^2.0.3+1
+  google_fonts: ^6.2.1
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.1.4
+
+  # Storage
+  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.2.3
+  connectivity_plus: ^6.0.3
+
+  # UI
+  cupertino_icons: ^1.0.6
+  cached_network_image: ^3.3.1
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  fl_chart: ^0.68.0
+
+  # Notifications Push système (flutter_local_notifications — gratuit, sans compte)
+  flutter_local_notifications: ^17.2.3
+
+  # Partage social natif (share_plus — gratuit)
+  share_plus: ^10.0.2
+
+  # QR codes for league invites (qr_flutter — gratuit)
+  qr_flutter: ^4.1.0
+
+  # Profile photo picker (image_picker — gratuit, web-compatible)
+  image_picker: ^1.1.2
+
+  # Utils
+  intl: ^0.20.2
+  uuid: ^4.4.0
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  riverpod_generator: ^2.4.3
+
+  # Branding asset generators (run once, see commands in plan)
+  flutter_launcher_icons: ^0.14.0
+  flutter_native_splash: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  # Fonts handled by google_fonts package — no local font files needed
+  assets:
+    - assets/images/
+
+# ─── App launcher icon (run: dart run flutter_launcher_icons) ───────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#0E1A2C"
+  adaptive_icon_background: "#0E1A2C"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  web:
+    generate: true
+    background_color: "#0E1A2C"
+    theme_color: "#C8961C"
+
+# ─── Native launch splash (run: dart run flutter_native_splash:create) ──────────
+flutter_native_splash:
+  color: "#0E1A2C"
+  image: "assets/images/logo.png"
+  android_12:
+    color: "#0E1A2C"
+    image: "assets/images/logo.png"
+  fullscreen: false
